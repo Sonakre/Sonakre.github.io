@@ -11,6 +11,7 @@ var rightStickerShowA = document.getElementById("rightStickerShowA");
 var rightStickerHideA = document.getElementById("rightStickerHideA");
 var rightPanelD = document.getElementById("rightPanelD");
 var rightPanelA = document.getElementById("rightPanelA");
+var saveD = document.getElementById("saveD");
 var red = document.getElementById("red");
 var yellow = document.getElementById("yellow");
 var blue = document.getElementById("blue");
@@ -121,7 +122,7 @@ function CanvasStateD(canvas) {
 
   	this.drawPoints = [];
 	var clickDrag = [];
-	var paint;
+	this.paint = false;
 
   	var myState = this;
 
@@ -224,6 +225,10 @@ function initDraw() {
 	eraser.addEventListener("click", function(){
 		s.ctx.strokeStyle = s.canvas.backgroundColor;
 		s.ctx.lineWidth = 20;
+	});
+	saveD.addEventListener("click", function(){
+		var dataURL = s.canvas.toDataURL();
+		console.log(dataURL);
 	});
 }
 
