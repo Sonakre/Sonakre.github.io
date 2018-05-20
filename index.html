@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>TFG -SC</title>
+	<link rel="stylesheet" ype="text/css" href="interface.css">
+	
+</head>
+<body onload="start();" >
+	<div class="wrapper" id="wrapper">
+
+		<div class="init" id="init">
+			<div class="options" id="options1">
+				<div class="box" id="letsDraw">
+					Let's Draw!
+				</div>
+			</div>
+			<div class="options" id="options2">
+				<div class="box" id="letsAnimate">
+					Let's Animate!
+				</div>
+			</div>
+		</div>
+
+
+		
+
+		
+		<div class="init" id="drawPanel" style="display: none;">
+			<div id="dPOverlay">
+				<div class="rightSticker show" id="rightStickerShowD">
+				</div>
+				<div class="rightSticker hide" id="rightStickerHideD" style="display: none;">
+				</div>
+				<div class="rightPanel" id="rightPanelD" style="display:none;">	
+				</div>
+			</div>
+			<div id="dP">
+				<div class="canvas" id="canvasD">
+					<canvas  id="canvasSelectorD"></canvas>
+				</div>
+				<div class="bottomPanel" id="drawColors">
+					<div class="colourList">
+						<div class="colours" id="red"></div>
+						<div class="colours" id="yellow"></div>
+						<div class="colours" id="blue"></div>
+						<div class="colours" id="pink"></div>
+						<div class="colours" id="purple"></div>
+						<div class="colours" id="orange"></div>
+						<div class="colours" id="green"></div>
+						<div class="colours" id="black"></div>
+						<div class="colours" id="white"></div>
+					</div>
+					<div class="eraser" id="eraser"></div>
+				</div>
+				
+			</div>
+			
+		</div>
+
+
+
+		<div class="init" id="animatePanel" style="display: none;">
+			<div id="dPOverlay">
+				<div class="rightSticker show" id="rightStickerShowA">
+				</div>
+				<div class="rightSticker hide" id="rightStickerHideA" style="display: none;">
+				</div>
+				<div class="rightPanel" id="rightPanelA" style="display: none;">
+					<div class="animateOptions" id="aSkeleton"> Skeleton
+					</div>
+					<div class="animateOptions" id="aCharacter"> Character
+					</div>
+					<div class="animateOptions" id="aSpritesheet"> Sprite Sheet
+					</div>
+				</div>
+			</div>
+			<div id="dP">
+				<div class="canvas" id="canvasA">
+					<canvas id="canvasSelectorA"></canvas>
+				</div>
+			</div>
+			
+			
+
+
+		</div>
+
+
+
+		<div class="logo" id="logo">
+		</div>
+
+		
+		
+		<div class="leftPanel" id="leftPanel" style="display: none;">
+		</div>
+		<div class="canvas" id="canvas" style="display: none;">
+			<canvas></canvas>
+		</div>
+		<div class="rightPanel" id="rightPanel" style="display: none;">
+		</div>
+
+	</div>
+
+<!--
+	<div class="container">
+			<div class="leftSticker show" id="leftStickerShow">
+			</div>
+			<div class="leftSticker hide" id="leftStickerHide" style="display: none;">
+		</div>
+
+			<div class="column" id="left_column">1</div>
+			<div class="column" id="canvas">
+				<canvas></canvas>
+			</div>
+			<div class="column" id="right_column">3</div> 
+		
+	  <div class="column" id="footer">4</div> 
+	</div>
+
+	<script type="text/javascript" src="canvas.js"></script>
+
+	<script type="text/javascript" src="skeleton.js"></script>
+
+	<script type="text/javascript" src="interface.js"></script>
+-->
+
+
+<script type="text/javascript" src="interface.js"></script>
+
+
+</body>
+</html>
