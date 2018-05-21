@@ -25,6 +25,14 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                 move_uploaded_file($_FILES["photo"]["tmp_name"], "upload/" . $_FILES["photo"]["name"]);
                 echo "Your file was uploaded successfully.";
             } 
+            if($_FILES["photo"]["error"] > 0){
+                echo "Error: " . $_FILES["photo"]["error"] . "<br>";
+            } else{
+                echo "File Name: " . $_FILES["photo"]["name"] . "<br>";
+                echo "File Type: " . $_FILES["photo"]["type"] . "<br>";
+                echo "File Size: " . ($_FILES["photo"]["size"] / 1024) . " KB<br>";
+                echo "Stored in: " . $_FILES["photo"]["tmp_name"];
+            }
         } else{
             echo "Error: There was a problem uploading your file. Please try again."; 
         }
