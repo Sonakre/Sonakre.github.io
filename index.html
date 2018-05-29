@@ -12,12 +12,12 @@
 	<div class="wrapper" id="wrapper">
 
 		<div class="init" id="init">
-			<div class="options" id="options1">
+			<div class="options" id="options1" onclick="toDraw();">
 				<div class="box" id="letsDraw">
 					Let's Draw!
 				</div>
 			</div>
-			<div class="options" id="options2">
+			<div class="options" id="options2" onclick="toAnimate();">
 				<div class="box" id="letsAnimate">
 					Let's Animate!
 				</div>
@@ -36,7 +36,7 @@
 				</div>
 				<div class="rightPanel" id="rightPanelD" style="display:none;">
 					<div class="save" id="saveD">SAVE
-						<form action="upload-manager.php" method="POST" enctype="multipart/form-data">
+						<form action='https://www.getform.org/u/723d0921-1c1c-42c0-9f75-2ecd9fabd644' enctype="multipart/form-data" method="POST" name="image">
         <h2>Upload File</h2>
         <label for="fileSelect">Filename:</label>
         <input type="file" name="photo" id="fileSelect">
@@ -45,6 +45,7 @@
     </form>
 					</div>	
 				</div>
+				<div class="logo backToAnimate" id="backToAnimate" style="display: none;"></div>
 			</div>
 			<div id="dP">
 				<div class="canvas" id="canvasD">
@@ -64,6 +65,7 @@
 					</div>
 					<div class="eraser" id="eraser"></div>
 				</div>
+
 				
 			</div>
 			
@@ -78,11 +80,28 @@
 				<div class="rightSticker hide" id="rightStickerHideA" style="display: none;">
 				</div>
 				<div class="rightPanel" id="rightPanelA" style="display: none;">
-					<div class="animateOptions" id="aSkeleton"> Skeleton
+					<div class="animateOptions" id="aSkeleton" > Skeleton
+					</div>
+					<div class="subOptions" id="subSkeleton" style="display: none;">
+						
 					</div>
 					<div class="animateOptions" id="aCharacter"> Character
+						<!--
+						<div class="subOptions" id="subCharacter" style="display: none;">
+						</div>
+						-->
 					</div>
+					<div class="subCharOpts" id="subCharOpts" style="display: none;">
+							<div class="subCharOpt" id="projectImage" style="flex-grow: 1;">Project Images</div>
+							<div class="imageContainer" id="imageContainer" style="display: none;">
+							</div>
+							<div class="subCharOpt" id="uploadImage" style="flex-grow: 1;"> Upload new Image</div>
+							<div class="subCharOpt" id="drawImage" style="flex-grow: 1;">Draw new Image</div>
+						</div>
 					<div class="animateOptions" id="aSpritesheet"> Sprite Sheet
+						<div class="subOptions" id="subSpriteSheet" style="display: none;"></div>
+					</div>
+					<div class="animateOptions" id="aSave"> Save
 					</div>
 				</div>
 			</div>
@@ -104,13 +123,7 @@
 
 		
 		
-		<div class="leftPanel" id="leftPanel" style="display: none;">
-		</div>
-		<div class="canvas" id="canvas" style="display: none;">
-			<canvas></canvas>
-		</div>
-		<div class="rightPanel" id="rightPanel" style="display: none;">
-		</div>
+		
 
 	</div>
 
@@ -119,6 +132,13 @@
 			<div class="leftSticker show" id="leftStickerShow">
 			</div>
 			<div class="leftSticker hide" id="leftStickerHide" style="display: none;">
+		</div>
+		<div class="leftPanel" id="leftPanel" style="display: none;">
+		</div>
+		<div class="canvas" id="canvas" style="display: none;">
+			<canvas></canvas>
+		</div>
+		<div class="rightPanel" id="rightPanel" style="display: none;">
 		</div>
 
 			<div class="column" id="left_column">1</div>

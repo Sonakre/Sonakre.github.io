@@ -22,19 +22,35 @@ var green = document.getElementById("green");
 var black = document.getElementById("black");
 var white = document.getElementById("white");
 var eraser = document.getElementById("eraser");
+var aSkeleton = document.getElementById("aSkeleton");
+var aCharacter = document.getElementById("aCharacter");
+var aSpriteSheet = document.getElementById("aSpritesheet");
+var subSkeleton = document.getElementById("subSkeleton");
+var subCharacter = document.getElementById("subCharacter");
+var subSpriteSheet = document.getElementById("subSpriteSheet");
+var subCharOpts = document.getElementById("subCharOpts");
+var aSave = document.getElementById("aSave");
+var projectImage = document.getElementById("projectImage");
+var imageContainer = document.getElementById("imageContainer");
+var uploadImage = document.getElementById("uploadImage");
+var drawImage = document.getElementById("drawImage");
+var backToAnimate = document.getElementById("backToAnimate");
+
+
+function toAnimate() {
+	init.style.display = "none";
+	animatePanel.style.display = "grid";
+	initAnimate();
+}
+
+function toDraw() {
+	init.style.display = "none";
+	drawPanel.style.display = "grid";
+	initDraw();
+}
+
 
 function start() {
-	letsDraw.addEventListener("click", function(){
-		init.style.display = "none";
-		drawPanel.style.display = "grid";
-		initDraw();
-	});
-
-	letsAnimate.addEventListener("click", function(){
-		init.style.display = "none";
-		animatePanel.style.display = "grid";
-		initAnimate();
-	});
 
 	rightStickerShowD.addEventListener("click", function(){
 		showRightPanelD();
@@ -183,53 +199,103 @@ CanvasStateD.prototype.draw = function() {
 	ctx.stroke();	
 }
 
-function initDraw() {
-	var s = new CanvasStateD(document.getElementById("canvasSelectorD"));
+function paintRed() {
+	s.ctx.strokeStyle = 'red';
+	s.ctx.lineWidth = 5;
+}
 
-	red.addEventListener("click", function(){
-		s.ctx.strokeStyle = 'red';
-		s.ctx.lineWidth = 5;
-	});
-	yellow.addEventListener("click", function(){
-		s.ctx.strokeStyle = 'yellow';
-		s.ctx.lineWidth = 5;
-	});
-	blue.addEventListener("click", function(){
-		s.ctx.strokeStyle = 'blue';
-		s.ctx.lineWidth = 5;
-	});
-	pink.addEventListener("click", function(){
-		s.ctx.strokeStyle = 'violet';
-		s.ctx.lineWidth = 5;
-	});
-	purple.addEventListener("click", function(){
-		s.ctx.strokeStyle = 'mediumPurple';
-		s.ctx.lineWidth = 5;
-	});
-	orange.addEventListener("click", function(){
-		s.ctx.strokeStyle = 'orange';
-		s.ctx.lineWidth = 5;
-	});
-	green.addEventListener("click", function(){
-		s.ctx.strokeStyle = 'green';
-		s.ctx.lineWidth = 5;
-	});
-	black.addEventListener("click", function(){
-		s.ctx.strokeStyle = 'black';
-		s.ctx.lineWidth = 5;
-	});
-	white.addEventListener("click", function(){
-		s.ctx.strokeStyle = 'white';
-		s.ctx.lineWidth = 5;
-	});
-	eraser.addEventListener("click", function(){
-		s.ctx.strokeStyle = s.canvas.backgroundColor;
-		s.ctx.lineWidth = 20;
-	});
+function paintYellow() {
+	s.ctx.strokeStyle = 'yellow';
+	s.ctx.lineWidth = 5;
+}
+
+function paintBlue() {
+	s.ctx.strokeStyle = 'blue';
+	s.ctx.lineWidth = 5;
+}
+
+function paintViolet() {
+	s.ctx.strokeStyle = 'violet';
+	s.ctx.lineWidth = 5;
+}
+
+function paintPurple() {
+	s.ctx.strokeStyle = 'mediumPurple';
+	s.ctx.lineWidth = 5;
+}
+
+function paintOrange() {
+	s.ctx.strokeStyle = 'orange';
+	s.ctx.lineWidth = 5;
+}
+
+function paintGreen() {
+	s.ctx.strokeStyle = 'green';
+	s.ctx.lineWidth = 5;
+}
+
+function paintBlack() {
+	s.ctx.strokeStyle = 'black';
+	s.ctx.lineWidth = 5;
+}
+
+function paintWhite() {
+	s.ctx.strokeStyle = 'white';
+	s.ctx.lineWidth = 5;
+}
+
+function paintEraser() {
+	s.ctx.strokeStyle = s.canvas.backgroundColor;
+	s.ctx.lineWidth = 20;
+}
+
+function fromDrawToAnimate() {
+	animatePanel.style.display= "grid";
+	drawPanel.style.display = "none";
+	backToAnimate.style.display = "none";
+	initAnimate();
+}
+
+function initDraw() {
+	s = new CanvasStateD(document.getElementById("canvasSelectorD"));
+
+	red.removeEventListener("click", paintRed, true);
+	red.addEventListener("click", paintRed, true);
+
+	yellow.removeEventListener("click", paintYellow, true);
+	yellow.addEventListener("click", paintYellow, true);
+	
+	blue.removeEventListener("click", paintBlue, true);
+	blue.addEventListener("click", paintBlue, true);
+
+	pink.removeEventListener("click", paintViolet, true);
+	pink.addEventListener("click", paintViolet, true);
+	
+	purple.removeEventListener("click", paintPurple, true);
+	purple.addEventListener("click", paintPurple, true);
+	
+	orange.removeEventListener("click", paintOrange, true);
+	orange.addEventListener("click", paintOrange, true);
+	
+	green.removeEventListener("click", paintGreen, true);
+	green.addEventListener("click", paintGreen, true);
+	
+	black.removeEventListener("click", paintBlack, true);
+	black.addEventListener("click", paintBlack, true);
+	
+	white.removeEventListener("click", paintWhite, true);
+	white.addEventListener("click", paintWhite, true);
+	
+	eraser.removeEventListener("click", paintEraser, true);
+	eraser.addEventListener("click", paintEraser, true);
+	
 	saveD.addEventListener("click", function(){
 		var dataURL = s.canvas.toDataURL();
-		console.log(dataURL);
+		//console.log(dataURL);
 	});
+
+	backToAnimate.removeEventListener("click", fromDrawToAnimate, true);
+	backToAnimate.addEventListener("click", fromDrawToAnimate, true);
 }
 
 
@@ -289,6 +355,7 @@ function CanvasStateA(canvas) {
   this.moveMouse = null;
   this.selection = null;
   this.isMoving = false;
+  this.nearest = null;
 
   var myState = this;
 
@@ -305,6 +372,8 @@ function CanvasStateA(canvas) {
         it's NOT dragging --> adds a new Point in the same place
   */
   canvas.addEventListener("mouseup", function(e) {
+  	e.preventDefault();
+  	e.stopPropagation();
     var mouse = myState.getMouse(e);
     var point = myState.point;
 
@@ -323,12 +392,18 @@ function CanvasStateA(canvas) {
     }
     myState.drag = false;
     myState.pointsDrag = [];
-
+    //
+    //isDown=false;
+  	//myState.nearest=null;
+  	//draw();
+	//
   }, true);
 
   // Mouse Down
   // If the mouse coordinates are in a Point, it can be dragged
   canvas.addEventListener("mousedown", function(e) {
+  	e.preventDefault();
+  	e.stopPropagation();
     myState.mouse = myState.getMouse(e);
     
     var points = myState.points;
@@ -341,6 +416,14 @@ function CanvasStateA(canvas) {
         myState.pointsDrag.push(points[i]);
       } 
     }
+	//
+    //myState.nearest = closestLine(myState.mouse.x, myState.mouse.y);
+	//
+    /*
+	draw();
+	// set dragging flag
+	isDown=true;
+    */
 
   }, true);
 
@@ -352,6 +435,8 @@ function CanvasStateA(canvas) {
         --> drags the Point
   */
   canvas.addEventListener("mousemove", function(e) {
+  	e.preventDefault();
+  	e.stopPropagation();
     var mouse = myState.getMouse(e);
     
     if (!myState.drag) {
@@ -364,9 +449,11 @@ function CanvasStateA(canvas) {
       requestAnimationFrame( function() { myState.draw() } );
       */
     } else {
-      myState.isMoving = true;
-      var points = myState.pointsDrag;
-      var length = points.length;
+      	myState.isMoving = true;
+      	var points = myState.pointsDrag;
+      	var length = points.length;
+      	//var dx = mouse.x - myState.mouse.x;
+    	//var dy = mouse.y - myState.mouse.y;
       
       for ( var i = 0; i <= length - 1; i++ ) {
         points[i].x = mouse.x;
@@ -386,6 +473,8 @@ CanvasStateA.prototype.addPoint = function(point) {
   myState.points.push(point);
   if (isEven(myState.points.length)) {
     myState.addLines(myState.points);
+    var l = myState.points.length;
+    addNewLineDiv(myState.points[l-2], myState.points[l-1]);
   }
   
   requestAnimationFrame( function() { myState.draw() } );
@@ -397,6 +486,7 @@ CanvasStateA.prototype.addLines = function(points) {
   var myState = this;
   var l = points.length;
   myState.lines.push([points[l-2], points[l-1]]);
+  
 }
 
 // Draws the Canvas State
@@ -407,7 +497,7 @@ CanvasStateA.prototype.draw = function() {
   var length = points.length;
   var l = lines.length;
 
-  clear(this);
+  clear(myState);
 
   // Draw lines
   for ( var i = 0; i <= l - 1; i ++ ) {
@@ -482,7 +572,7 @@ CanvasStateD.prototype.getMouse = function(e) {
 
 // Clear Canvas
 function clear( canvas ) {
-  canvas.ctx.clearRect(0, 0, this.width, this.height);
+  canvas.ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
 
 // Checks if the cursor is inside a Point
@@ -523,8 +613,204 @@ function dist(p1,p2) {
   return Math.hypot(p2.x-p1.x, p2.y-p1.y);
 }
 
+
+
+
+
+
+function addNewLineDiv(p1, p2) {
+	var newLine = document.createElement("div");
+	newLine.className = "lineDiv";
+	newLine.innerHTML = "new line";
+	//newLine.addEventListener("onmouseover", selectLine, true);
+	//newLine.addEventListener("onmouseout", unselectLine, true);
+	newLine.onmouseover = function(){
+		p1.fill = "#ff0000";
+		p2.fill = "#ff0000";
+	};
+	newLine.onmouseout = function(){
+		p1.fill = "#00ff00";
+		p2.fill = "#00ff00";
+	};
+
+/*
+	var arrow = document.createElement("div");
+	arrow.className = "arrow";
+
+	subSkeleton.appendChild(arrow);
+*/
+	subSkeleton.appendChild(newLine);
+
+}
+
+function selectLine(p1,p2) {
+	
+
+}
+
+function unselectLine(p1,p2) {
+	
+}
+
+
+
+
+function projectImagesPreview() {
+	//everytime that an image is added, save the filename somewhere
+	
+	var image = document.createElement("img");
+	
+	image.src = "images/ilusion_logo.png";
+	image.id = "ilusion_logo.png";
+	image.className = "pImages";
+	image.width = "70";
+	image.height = "100";
+
+	imageContainer.appendChild(image);
+
+
+}
+
+
+
+function selectSkeletonOption() {
+	if (subSkeleton.style.display == "flex")
+  		closeSkeleton();
+  	else displaySkeleton();
+}
+
+function selectCharacterOption() {
+	if (subCharOpts.style.display == "flex")
+  		closeCharacter();
+  	else displayCharacter();
+}
+
+function selectSpriteSheetOption() {
+	if (aSpriteSheet.style.flexGrow == "1")
+  		closeSpriteSheet();
+  	else displaySpriteSheet();
+}
+
+function selectProjectImageOption(){
+	if (projectImage.style.flexGrow == "1")
+		displayProjectImages();
+	else closeProjectImages();
+}
+
+function displaySkeleton() {
+	if (subCharOpts.style.display == "flex")
+		closeCharacter();
+	if (aSpriteSheet.style.flexGrow == "1")
+		closeSpriteSheet();
+	//aSkeleton.style.flexGrow = "1";
+	subSkeleton.style.display = "flex";
+	aSkeleton.style.height = "5%";
+	aSave.style.marginTop = 0;
+	aCharacter.style.height = "10%";
+	aSpriteSheet.style.height = "10%";
+	aSave.style.height = "10%";
+	//subSkeleton.style.display = "flex";
+}
+
+function closeSkeleton() {
+	aSkeleton.style.height = "15%";
+	aSkeleton.style.flexGrow = "0";
+	aSave.style.marginTop = "300px";
+	aCharacter.style.height = "15%";
+	aSpriteSheet.style.height = "15%";
+	aSave.style.height = "15%";
+	subSkeleton.style.display = "none";
+}
+
+function displayCharacter() {
+	if (subSkeleton.style.display == "flex")
+		closeSkeleton();
+	if (aSpriteSheet.style.flexGrow == "1")
+		closeSpriteSheet();
+	//aCharacter.style.flexGrow = "1";
+	subCharOpts.style.display = "flex";
+	aCharacter.style.height = "5%";
+	aSave.style.marginTop = 0;
+	aSkeleton.style.height = "10%";
+	aSpriteSheet.style.height = "10%";
+	aSave.style.height = "10%";
+	//subCharacter.style.display = "flex";
+}
+
+function closeCharacter() {
+	aCharacter.style.height = "15%";
+	aCharacter.style.flexGrow = "0";
+	aSave.style.marginTop = "300px";
+	aSkeleton.style.height = "15%";
+	aSpriteSheet.style.height = "15%";
+	aSave.style.height = "15%";
+	subCharOpts.style.display = "none";
+}
+
+function displaySpriteSheet() {
+	if (subSkeleton.style.display == "flex")
+		closeSkeleton();
+	if (subCharOpts.style.display == "flex")
+		closeCharacter();
+	aSpriteSheet.style.flexGrow = "1";
+	aSave.style.marginTop = 0;
+	aSkeleton.style.height = "10%";
+	aCharacter.style.height = "10%";
+	aSave.style.height = "10%";
+	subSpriteSheet.style.display = "flex";
+}
+
+function closeSpriteSheet() {
+	aSpriteSheet.style.height = "15%";
+	aSpriteSheet.style.flexGrow = "0";
+	aSave.style.marginTop = "300px";
+	aSkeleton.style.height = "15%";
+	aCharacter.style.height = "15%";
+	aSave.style.height = "15%";
+	subSpriteSheet.style.display = "none";
+}
+
+function drawToAnimate() {
+	animatePanel.style.display= "none";
+	drawPanel.style.display = "grid";
+	backToAnimate.style.display = "block";
+	
+	
+	initDraw();
+}
+
+function displayProjectImages() {
+	projectImage.style.flexGrow = "0";
+	drawImage.style.flexGrow = "0";
+	uploadImage.style.flexGrow = "0";
+	imageContainer.style.display = "flex";
+	projectImagesPreview();
+}
+
+function closeProjectImages() {
+	projectImage.style.flexGrow = "1";
+	drawImage.style.flexGrow = "1";
+	uploadImage.style.flexGrow = "1";
+	imageContainer.style.display = "none";
+}
+
 function initAnimate() {
-  var s = new CanvasStateA(document.getElementById("canvasSelectorA"));
+  	s = new CanvasStateA(document.getElementById("canvasSelectorA"));
+
+  	aSkeleton.removeEventListener("click", selectSkeletonOption, false);
+  	aSkeleton.addEventListener("click", selectSkeletonOption, false);
+	
+	aCharacter.removeEventListener("click", selectCharacterOption, false);
+	aCharacter.addEventListener("click", selectCharacterOption, false);
+	
+	aSpriteSheet.removeEventListener("click", selectSpriteSheetOption, false);
+	aSpriteSheet.addEventListener("click", selectSpriteSheetOption, false);
+	
+	projectImage.removeEventListener("click", selectProjectImageOption, false);
+	projectImage.addEventListener("click", selectProjectImageOption, false);
+	
+	drawImage.removeEventListener("click", drawToAnimate, false);
+	drawImage.addEventListener("click", drawToAnimate, false);
 }
 
 
