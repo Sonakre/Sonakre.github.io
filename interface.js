@@ -66,7 +66,6 @@ function toDraw() {
 }
 
 
-
 function start() {
 
   rightStickerShowD.addEventListener("click", function(){
@@ -132,7 +131,6 @@ function hideRightPanelA()
   }
 }
 
-//
 
 
 
@@ -320,9 +318,6 @@ function initDraw() {
   backToAnimate.addEventListener("click", fromDrawToAnimate, true);
 }
 
-//
-
-
 
 
 
@@ -360,6 +355,27 @@ function drawLine( line, ctx ) {
   ctx.stroke();
 }
 
+function ImageForCanvas( img, p1, p2, rotation, height, counter, heightOffset, widthOffset, rotationOffset ) {
+  this.img = img || 0;
+  this.p1 = p1 || 0;
+  this.p2 = p2 || 0;
+  this.rotation = rotation || 0;
+  this.height = height || 0;
+  this.counter = counter || 0;
+  this.heightOffset = heightOffset || 0;
+  this.widthOffset = widthOffset || 0;
+  this.rotationOffset = rotationOffset || 0;
+}
+
+ImageForCanvas.prototype.putImageOnCanvas = function(ctx, myState) {
+  ctx.save();
+    this.p1.draw(ctx);
+    ctx.translate(this.p1.x, this.p1.y);
+  ctx.rotate(this.rotation + this.rotationOffset);
+  ctx.drawImage(this.img, -this.img.width/2 - this.widthOffset/2, -this.heightOffset/2, this.img.width + this.widthOffset, this.height + this.heightOffset);
+  ctx.restore();
+}
+
 // Class Canvas Animate
 function CanvasStateA(canvas) {
   var wrapper = document.getElementById("canvasA");
@@ -372,16 +388,30 @@ function CanvasStateA(canvas) {
 
   // Keep track of state
   this.point = null;
+
   this.points = [];
   this.lines = [];
+  this.skeletonImages = [];
+  
+  this.skeleton = [];
+
+  this.skeletonCollection = [];
+
+  this.skeletonCounter = 0;
+
   this.mouse = null;
   this.drag = false;
   this.drawing = false;
   this.moveMouse = null;
   this.selection = null;
   this.isMoving = false;
+  this.nearest = null;
+  this.imageSlelected = null;
+  this.lineDivSelected = null;
 
-  var myState = this;
+  var myState = this; 
+    
+  this.addInitialSkeletonPoints();
 
   // *** Events ***
 
@@ -396,6 +426,8 @@ function CanvasStateA(canvas) {
         it's NOT dragging --> adds a new Point in the same place
   */
   canvas.addEventListener("mouseup", function(e) {
+    e.preventDefault();
+    e.stopPropagation();
     var mouse = myState.getMouse(e);
     var point = myState.point;
 
@@ -414,12 +446,18 @@ function CanvasStateA(canvas) {
     }
     myState.drag = false;
     myState.pointsDrag = [];
-
+    //
+    //isDown=false;
+    //myState.nearest=null;
+    //draw();
+  //
   }, true);
 
   // Mouse Down
   // If the mouse coordinates are in a Point, it can be dragged
   canvas.addEventListener("mousedown", function(e) {
+    e.preventDefault();
+    e.stopPropagation();
     myState.mouse = myState.getMouse(e);
     
     var points = myState.points;
@@ -432,6 +470,14 @@ function CanvasStateA(canvas) {
         myState.pointsDrag.push(points[i]);
       } 
     }
+  //
+    //myState.nearest = closestLine(myState.mouse.x, myState.mouse.y);
+  //
+    /*
+  draw();
+  // set dragging flag
+  isDown=true;
+    */
 
   }, true);
 
@@ -443,6 +489,8 @@ function CanvasStateA(canvas) {
         --> drags the Point
   */
   canvas.addEventListener("mousemove", function(e) {
+    e.preventDefault();
+    e.stopPropagation();
     var mouse = myState.getMouse(e);
     
     if (!myState.drag) {
@@ -455,19 +503,105 @@ function CanvasStateA(canvas) {
       requestAnimationFrame( function() { myState.draw() } );
       */
     } else {
-      myState.isMoving = true;
-      var points = myState.pointsDrag;
-      var length = points.length;
+        myState.isMoving = true;
+        var points = myState.pointsDrag;
+        var length = points.length;
+        var images = myState.skeletonImages;
+        var li = images.length;
+        var lines = myState.lines;
+        //var dx = mouse.x - myState.mouse.x;
+      //var dy = mouse.y - myState.mouse.y;
       
       for ( var i = 0; i <= length - 1; i++ ) {
         points[i].x = mouse.x;
         points[i].y = mouse.y;
+      }
+      for (var i = 0; i <= li -1; i++ ){
+        var dx = lines[i][1].x - lines[i][0].x;
+    var dy = lines[i][1].y - lines[i][0].y;
+    var distance = dist(lines[i][0], lines[i][1]);
+    var rotation = Math.atan2(dy, dx);
+    var angleDegrees = rotation * (180/Math.PI);
+    var radians = (angleDegrees - 90) * (Math.PI/180);
+        images[i].rotation = radians;
+        images[i].height = distance;
       }
     }
 
   }, true);
 
   requestAnimationFrame( function() { myState.draw() } );
+}
+
+CanvasStateA.prototype.addInitialSkeletonPoints = function() {
+  var myState = this;
+
+  myState.addPoint(new Point(605, 30, 10, 'rgb(0,255,0)'));
+  myState.addPoint(new Point(605, 125, 10, 'rgb(0,255,0)'));
+  
+  myState.addPoint(new Point(605, 125, 10, 'rgb(0,255,0)'));
+  myState.addPoint(new Point(534, 135, 10, 'rgb(0,255,0)'));
+  
+  myState.addPoint(new Point(605, 125, 10, 'rgb(0,255,0)'));
+  myState.addPoint(new Point(664, 135, 10, 'rgb(0,255,0)'));
+  
+  myState.addPoint(new Point(605, 125, 10, 'rgb(0,255,0)'));
+  myState.addPoint(new Point(605, 247, 10, 'rgb(0,255,0)'));
+  
+  myState.addPoint(new Point(605, 247, 10, 'rgb(0,255,0)'));
+  myState.addPoint(new Point(601, 318, 10, 'rgb(0,255,0)'));
+  
+  myState.addPoint(new Point(534, 135, 10, 'rgb(0,255,0)'));
+  myState.addPoint(new Point(498, 223, 10, 'rgb(0,255,0)'));
+  
+  myState.addPoint(new Point(498, 223, 10, 'rgb(0,255,0)'));
+  myState.addPoint(new Point(440, 298, 10, 'rgb(0,255,0)'));
+  
+  myState.addPoint(new Point(440, 298, 10, 'rgb(0,255,0)'));
+  myState.addPoint(new Point(413, 341, 10, 'rgb(0,255,0)'));
+  
+  myState.addPoint(new Point(664, 135, 10, 'rgb(0,255,0)'));
+  myState.addPoint(new Point(695, 220, 10, 'rgb(0,255,0)'));
+  
+  myState.addPoint(new Point(695, 220, 10, 'rgb(0,255,0)'));
+  myState.addPoint(new Point(752, 298, 10, 'rgb(0,255,0)'));
+  
+  myState.addPoint(new Point(752, 298, 10, 'rgb(0,255,0)'));
+  myState.addPoint(new Point(775, 336, 10, 'rgb(0,255,0)'));
+  
+  myState.addPoint(new Point(601, 318, 10, 'rgb(0,255,0)'));
+  myState.addPoint(new Point(548, 325, 10, 'rgb(0,255,0)'));
+  
+  myState.addPoint(new Point(601, 318, 10, 'rgb(0,255,0)'));
+  myState.addPoint(new Point(650, 325, 10, 'rgb(0,255,0)'));
+  
+  myState.addPoint(new Point(548, 325, 10, 'rgb(0,255,0)'));
+  myState.addPoint(new Point(539, 459, 10, 'rgb(0,255,0)'));
+  
+  myState.addPoint(new Point(539, 459, 10, 'rgb(0,255,0)'));
+  myState.addPoint(new Point(536, 594, 10, 'rgb(0,255,0)'));
+  
+  myState.addPoint(new Point(536, 594, 10, 'rgb(0,255,0)'));
+  myState.addPoint(new Point(485, 612, 10, 'rgb(0,255,0)'));
+  
+  myState.addPoint(new Point(650, 325, 10, 'rgb(0,255,0)'));
+  myState.addPoint(new Point(657, 450, 10, 'rgb(0,255,0)'));
+  
+  myState.addPoint(new Point(657, 450, 10, 'rgb(0,255,0)'));
+  myState.addPoint(new Point(657, 596, 10, 'rgb(0,255,0)'));
+  
+  myState.addPoint(new Point(657, 596, 10, 'rgb(0,255,0)'));
+  myState.addPoint(new Point(705, 604, 10, 'rgb(0,255,0)'));
+  
+
+  myState.pointsDrag = [];
+
+  myState.skeleton.push(myState.points);
+  myState.skeleton.push(myState.lines);
+  myState.skeleton.push(myState.skeletonImages);
+  myState.skeleton.push(myState.skeletonCounter);
+  
+  myState.skeletonCollection.push(myState.skeleton);
 }
 
 // Add new Point
@@ -477,6 +611,8 @@ CanvasStateA.prototype.addPoint = function(point) {
   myState.points.push(point);
   if (isEven(myState.points.length)) {
     myState.addLines(myState.points);
+    var l = myState.points.length;
+    addNewLineDiv(myState.points[l-2], myState.points[l-1], myState);
   }
   
   requestAnimationFrame( function() { myState.draw() } );
@@ -488,6 +624,7 @@ CanvasStateA.prototype.addLines = function(points) {
   var myState = this;
   var l = points.length;
   myState.lines.push([points[l-2], points[l-1]]);
+  
 }
 
 // Draws the Canvas State
@@ -497,8 +634,18 @@ CanvasStateA.prototype.draw = function() {
   var lines = myState.lines;
   var length = points.length;
   var l = lines.length;
+  var image = myState.skeletonImages;
+  var li = image.length;
 
-  clear(this);
+  clearC(myState);
+
+  
+
+  // Draw Images
+  for ( var i = 0; i <= li- 1; i++) {
+    image[i].putImageOnCanvas(myState.ctx, myState);
+
+  }
 
   // Draw lines
   for ( var i = 0; i <= l - 1; i ++ ) {
@@ -571,10 +718,17 @@ CanvasStateD.prototype.getMouse = function(e) {
   return {x: mx, y: my};
 }
 
+
 // Clear Canvas
+function clearC( canvas ) {
+  canvas.ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+
 function clear( canvas ) {
   canvas.ctx.clearRect(0, 0, this.width, this.height);
 }
+
 
 // Checks if the cursor is inside a Point
 function isMouseInPoint(mouse, data, ctx) {
@@ -614,8 +768,727 @@ function dist(p1,p2) {
   return Math.hypot(p2.x-p1.x, p2.y-p1.y);
 }
 
+
+
+
+
+
+function addNewLineDiv(p1, p2, myState) {
+  var newLineDiv = document.createElement("div");
+  newLineDiv.className = "lineActualDiv";
+  newLineDiv.id = "lineActualDiv" + lineCounter;
+
+  var newLine = document.createElement("textarea");
+  newLine.className = "lineDiv";
+  newLine.id = "lineDiv" + lineCounter;
+  //newLine.title = lineCounter;
+  newLine.innerHTML = "new line";
+
+  var deleteLineDiv = document.createElement("div");
+  deleteLineDiv.className = "deleteLineDiv";
+  deleteLineDiv.id = "deleteLineDiv" + lineCounter;
+
+  
+  var imageContainer = document.createElement("div");
+  imageContainer.className = "imageContainer";
+  imageContainer.id = "imageOnLine" + lineCounter;
+  imageContainer.style.display = "none";
+  imageContainer.title = lineCounter;
+  //newLine.addEventListener("onmouseover", selectLine, true);
+  //newLine.addEventListener("onmouseout", unselectLine, true);
+  newLine.onmouseover = function(){
+    p1.fill = "#ff0000";
+    p2.fill = "#ff0000";
+  };
+  newLine.onmouseout = function(){
+    p1.fill = "#00ff00";
+    p2.fill = "#00ff00";
+  };
+
+  newLine.onclick = function() {
+    canvasAnimation.lineDivSelected = newLine;
+    //canvasAnimation.imageSlelected = imageContainer;
+    if (chooseLine.style.display == "flex")
+      addImageToLine(chooseLine, imageContainer, p1, p2);
+    else showImageOnLine();
+  }
+
+  deleteLineDiv.onclick = function() {
+    deleteLine(subSkeleton, imageContainer, newLineDiv, p1, p2);
+  }
+
+  currentSkeleton.style.display = "flex";
+  currentSkeletonContainerOut.style.flexGrow = "1";
+  currentSkeletonContainerOut.style.display = "flex";
+  currentSkeleton.style.height = "10%";
+  currentSkeleton.style.flexGrow = "0";
+  savedSkeletons.style.flexGrow = "0";
+  createSkeleton.style.flexGrow = "0";
+  savedSkeletons.style.height = "10%";
+  createSkeleton.style.height = "10%";
+
+  saveSkeleton.style.display = "flex";
+  saveSkeleton.style.height = "60px";
+
+/*
+  var arrow = document.createElement("div");
+  arrow.className = "arrow";
+
+  subSkeleton.appendChild(arrow);
+*/
+
+  newLineDiv.appendChild(newLine);
+  newLineDiv.appendChild(deleteLineDiv);
+
+/*
+  if(currentSkeletonContainer.title != myState.skeletonCounter) {
+    currentSkeletonContainer = document.createElement("div");
+    currentSkeletonContainer.className = "subOptions";
+    currentSkeletonContainer.id = "currentSkeletonContainer" + canvasAnimation.skeletonCounter;
+    currentSkeletonContainerOut.appendChild(currentSkeletonContainer);
+  }
+  */
+  currentSkeletonContainer.appendChild(newLineDiv);
+  currentSkeletonContainer.appendChild(imageContainer);
+
+  //imageOnLine = document.getElementById("imageOnLine" + lineCounter);
+  lineCounter++;
+}
+
+function showImageOnLine() {
+}
+
+function addImageToLine(chooseLine, imageContainer, p1, p2) {
+  var lineImage = document.createElement("div");
+  lineImage.className = "lineImage";
+  lineImage.id = "lineImage" + imageContainer.title;
+  var deleteFromSkeleton = document.createElement("div");
+  deleteFromSkeleton.className = "addToSkeleton";
+  deleteFromSkeleton.id = "deleteFromSkeleton";
+
+
+  var image = document.createElement("img");
+  image.src = "images/" + chooseLine.title;
+  image.id = chooseLine.title + imageContainer.title;
+  image.className = "pImages";
+  image.title = imageContainer.title;
+  image.width = "70";
+  image.height = "100";
+
+  imageContainer.onclick = function() {
+    if ( imageContainer.hasChildNodes() )
+      canvasAnimation.imageSlelected = image;
+
+  }
+
+  deleteFromSkeleton.onclick = function() {
+    deleteImageFromSkeleton(image, lineImage, imageContainer);
+  }
+
+  
+
+
+  imageContainer.style.display = "block";
+  imageContainer.style.height = "auto";
+  imageContainer.style.flexGrow = "0";
+
+  lineImage.appendChild(image);
+  lineImage.appendChild(deleteFromSkeleton);
+  imageContainer.appendChild(lineImage);
+
+  chooseLine.style.display = "none";
+
+  addImageToCanvas(p1, p2, image.src, image.id, imageContainer.title);
+  imageOnCanvasShowOptions();
+}
+
+function imageOnCanvasShowOptions() {
+  leftPanel.style.display = "flex";
+  leftStickerHide.style.display = "flex";
+}
+
+function deleteLine(subSkeleton, imageContainer, newLineDiv, p1, p2) {
+  newLineDiv.parentNode.removeChild(newLineDiv);
+  imageContainer.parentNode.removeChild(imageContainer);
+  var images = canvasAnimation.skeletonImages;
+  var legnth = images.length;
+  var points = canvasAnimation.points;
+  var lines = canvasAnimation.lines;
+  var lp = points.length;
+  var ll = lines.length;
+  var imageToSplice = 0;
+  var pointsToDelete = 0;
+  var linesToDelete = 0;
+  for ( var i = 0; i <= length - 1; i++ ) {
+    if (images[i].counter == imageContainer.title)
+      imageToSplice = i;
+  }
+  images.splice(imageToSplice, 1);
+  for ( var i = 0; i <= lp - 1; i ++ ) {
+    if (points[i] == p1) {
+      if (points[i+1] == p2)
+        pointsToDelete = i
+    }
+  }
+  points.splice(pointsToDelete, 2);
+  for ( var i = 0; i <= ll - 1; i++) {
+    if (lines[i][0] == p1) {
+      if (lines[i][1] == p2)
+        linesToDelete = i
+    }
+  }
+  lines.splice(linesToDelete, 1);
+
+  if (!currentSkeletonContainer.hasChildNodes()) {
+    saveSkeleton.style.display = "none";
+  }
+}
+
+function deleteImageFromSkeleton(image, lineImage, imageContainer) {
+  lineImage.parentNode.removeChild(lineImage);
+  imageContainer.style.display = "none";
+  var images = canvasAnimation.skeletonImages;
+  var length = images.length;
+  var imageToSplice = 0;
+  for ( var i = 0; i <= length - 1; i++ ) {
+    if (images[i].counter == image.title)
+      imageToSplice = i;
+      
+  }
+  images.splice(imageToSplice, 1);
+  canvasAnimation.imageSlelected = null;
+  //canvasAnimation.skeletonImages.pop(image);
+}
+
+function addImageToCanvas(p1, p2, src, id, counter) {
+  //distance = dist(p1, p2);
+  //distance = dist/2;  
+
+  //console.log(canvasA.ctx);
+
+
+  var sticky = document.getElementById(id);
+  //var sticky = document.getElementById("imagetotry");
+  
+  var dx = p2.x - p1.x;
+  var dy = p2.y - p1.y;
+  var rotation = Math.atan2(dy, dx);
+  var angleDegrees = rotation * (180/Math.PI);
+  var radians = (angleDegrees - 90) * (Math.PI/180);
+
+  var image = new ImageForCanvas(sticky, p1, p2, radians, dist(p1, p2), counter);
+  
+  canvasAnimation.skeletonImages.push(image);
+  //canvasA.ctx.drawImage(sticky, 100, 100);
+  //sticky.src = src;
+  //canvasA.drawImageOnCanvas = function() {
+    
+  //};
+  //sticky.onload = canvasA.drawImageOnCanvas;
+
+  
+
+}
+
+
+function projectImagesPreview() {
+  //everytime that an image is added, save the filename somewhere
+  var wrapper = document.createElement("div");
+  wrapper.className = "imageWrapper";
+
+  var addToSkeleton = document.createElement("div");
+  addToSkeleton.className = "addToSkeleton";
+  var text = document.createElement("span");
+  text.className = "addToSkeleton text";
+  text.innerHTML = "Add Image to Skeleton"
+
+  addToSkeleton.appendChild(text);
+
+  var image = document.createElement("img");
+  
+  image.src = "images/imagetry.png";
+  image.id = "imagetry.png";
+  image.className = "pImages";
+  image.width = "70";
+  image.height = "100";
+
+  addToSkeleton.onclick = function(){
+    chooseLine.style.display = "flex";
+    chooseLine.title = image.id;
+    displaySkeleton();
+  };
+
+
+  wrapper.appendChild(image);
+  wrapper.appendChild(addToSkeleton);
+  imageContainer.appendChild(wrapper);
+
+}
+
+
+
+function selectSkeletonOption() {
+  if (subSkeleton.style.display == "flex")
+      closeSkeleton();
+    else displaySkeleton();
+}
+
+function selectCharacterOption() {  
+  if (subCharOpts.style.display == "flex")
+      closeCharacter();
+    else displayCharacter();
+}
+
+function selectSpriteSheetOption() {
+  if (aSpriteSheet.style.flexGrow == "1")
+      closeSpriteSheet();
+    else displaySpriteSheet();
+}
+
+function selectProjectImageOption(){
+  if (projectImage.style.flexGrow == "1")
+    displayProjectImages();
+  else closeProjectImages();
+}
+
+function displaySkeleton() {
+  if (subCharOpts.style.display == "flex")
+    closeCharacter();
+  if (aSpriteSheet.style.flexGrow == "1")
+    closeSpriteSheet();
+  if (chooseLine.style.display == "flex") {
+    subSkeleton.style.zIndex = "1";
+  }
+  //aSkeleton.style.flexGrow = "1";
+  subSkeleton.style.display = "flex";
+  aSkeleton.style.height = "5%";
+  aSave.style.marginTop = 0;
+  aCharacter.style.height = "10%";
+  aSpriteSheet.style.height = "10%";
+  aSave.style.height = "10%";
+  //subSkeleton.style.display = "flex";
+}
+
+function closeSkeleton() {
+  if (chooseLine.style.display == "flex") {
+    chooseLine.style.display = "none";
+    displayCharacter();
+  }
+
+  aSkeleton.style.height = "15%";
+  aSkeleton.style.flexGrow = "0";
+  aSave.style.marginTop = "300px";
+  aCharacter.style.height = "15%";
+  aSpriteSheet.style.height = "15%";
+  aSave.style.height = "15%";
+  subSkeleton.style.display = "none";
+  subSkeleton.style.zIndex = "0";
+}
+
+function displayCharacter() {
+  if (subSkeleton.style.display == "flex")
+    closeSkeleton();
+  if (aSpriteSheet.style.flexGrow == "1")
+    closeSpriteSheet();
+  if (chooseLine.style.display == "flex")
+    chooseLine.style.display = "none";
+  console.log(canvasA);
+  //
+  //
+  //;
+  //aCharacter.style.flexGrow = "1";
+  subCharOpts.style.display = "flex";
+  aCharacter.style.height = "5%";
+  aSave.style.marginTop = 0;
+  aSkeleton.style.height = "10%";
+  aSpriteSheet.style.height = "10%";
+  aSave.style.height = "10%";
+  //subCharacter.style.display = "flex";
+}
+
+function closeCharacter() {
+  aCharacter.style.height = "15%";
+  aCharacter.style.flexGrow = "0";
+  aSave.style.marginTop = "300px";
+  aSkeleton.style.height = "15%";
+  aSpriteSheet.style.height = "15%";
+  aSave.style.height = "15%";
+  subCharOpts.style.display = "none";
+}
+
+function displaySpriteSheet() {
+  if (subSkeleton.style.display == "flex")
+    closeSkeleton();
+  if (subCharOpts.style.display == "flex")
+    closeCharacter();
+  if (chooseLine.style.display == "flex") {
+    chooseLine.style.display = "none";
+    displayCharacter();
+  }
+  aSpriteSheet.style.flexGrow = "1";
+  aSave.style.marginTop = 0;
+  aSkeleton.style.height = "10%";
+  aCharacter.style.height = "10%";
+  aSave.style.height = "10%";
+  subSpriteSheet.style.display = "flex";
+}
+
+function closeSpriteSheet() {
+  aSpriteSheet.style.height = "15%";
+  aSpriteSheet.style.flexGrow = "0";
+  aSave.style.marginTop = "300px";
+  aSkeleton.style.height = "15%";
+  aCharacter.style.height = "15%";
+  aSave.style.height = "15%";
+  subSpriteSheet.style.display = "none";
+}
+
+function drawToAnimate() {
+  animatePanel.style.display= "none";
+  drawPanel.style.display = "grid";
+  backToAnimate.style.display = "block";
+  
+  
+  initDraw();
+}
+
+function displayProjectImages() {
+  projectImage.style.flexGrow = "0";
+  drawImageVar.style.flexGrow = "0";
+  uploadImage.style.flexGrow = "0";
+  imageContainer.style.display = "flex";
+  projectImagesPreview();
+}
+
+function closeProjectImages() {
+  projectImage.style.flexGrow = "1";
+  drawImageVar.style.flexGrow = "1";
+  uploadImage.style.flexGrow = "1";
+  imageContainer.style.display = "none";
+}
+
+function hideChooseLine() {
+  if (chooseLine.style.display == "flex") {
+    chooseLine.style.display = "none";
+    displayCharacter();
+  }
+
+}
+
+function flipImageOnCanvas() {
+  var images = canvasAnimation.skeletonImages;
+  var length = images.length;
+  var imageToSplice = 0;
+  for ( var i = 0; i <= length - 1; i++ ) {
+    if (images[i].counter == canvasAnimation.imageSlelected.title) {
+      images[i].rotationOffset = images[i].rotationOffset + (180 * Math.PI / 180);
+      var p1, p2;
+      p2 = images[i].p1;
+      p1 = images[i].p2;
+      images[i].p1 = p1;
+      images[i].p2 = p2;
+    } 
+  }
+}
+
+function biggerImageOnCanvas() {
+  var images = canvasAnimation.skeletonImages;
+  var length = images.length;
+  var imageToSplice = 0;
+  for ( var i = 0; i <= length - 1; i++ ) {
+    if (images[i].counter == canvasAnimation.imageSlelected.title) {
+      images[i].heightOffset = images[i].heightOffset + 10;
+    } 
+  }
+}
+
+function smallerImageOnCanvas() {
+  var images = canvasAnimation.skeletonImages;
+  var length = images.length;
+  var imageToSplice = 0;
+  for ( var i = 0; i <= length - 1; i++ ) {
+    if (images[i].counter == canvasAnimation.imageSlelected.title) {
+      images[i].heightOffset = images[i].heightOffset - 10;
+    } 
+  }
+}
+
+function widerImageOnCanvas() {
+  var images = canvasAnimation.skeletonImages;
+  var length = images.length;
+  var imageToSplice = 0;
+  for ( var i = 0; i <= length - 1; i++ ) {
+    if (images[i].counter == canvasAnimation.imageSlelected.title) {
+      images[i].widthOffset = images[i].widthOffset + 10;
+    } 
+  }
+}
+
+function narrowerImageOnCanvas() {
+  var images = canvasAnimation.skeletonImages;
+  var length = images.length;
+  var imageToSplice = 0;
+  for ( var i = 0; i <= length - 1; i++ ) {
+    if (images[i].counter == canvasAnimation.imageSlelected.title) {
+      images[i].widthOffset = images[i].widthOffset - 10;
+    } 
+  }
+}
+
+function leftStickerHidePanel() {
+  leftPanel.style.display = "none";
+  leftStickerHide.style.display = "none";
+  leftStickerShow.style.display = "flex";
+}
+
+function leftStickerShowPanel() {
+  leftPanel.style.display = "flex";
+  leftStickerHide.style.display = "flex";
+  leftStickerShow.style.display = "none";
+}
+
+function createSkeletonFun() {
+  var result = false;
+  if (currentSkeletonContainer.hasChildNodes()) {
+    result = confirm("If you Create a new Skeleton, the current skeleton will we deleted. Do you wish to continue?");
+  }
+  if (result) {
+    /*
+    while (currentSkeletonContainer.firstChild) {
+        currentSkeletonContainer.removeChild(currentSkeletonContainer.firstChild);
+    }
+    */
+    currentSkeletonContainer.style.display = "none";
+    canvasAnimation.points = [];
+    canvasAnimation.lines = [];
+    canvasAnimation.skeletonImages = [];
+    canvasAnimation.skeleton = [];
+    canvasAnimation.skeletonCounter = canvasAnimation.skeletonCounter + 1;
+  }
+  if (currentSkeletonContainer.hasChildNodes()) {
+    saveSkeleton.style.display = "flex";
+    saveSkeleton.style.height = "60px";
+  }
+  currentSkeletonContainer = document.createElement("div");
+  currentSkeletonContainer.className = "subOptions";
+  currentSkeletonContainer.id = "currentSkeletonContainer" + canvasAnimation.skeletonCounter;
+  currentSkeletonContainer.title = canvasAnimation.skeletonCounter;
+
+  currentSkeletonContainerOut.appendChild(currentSkeletonContainer);
+
+  currentSkeleton.style.display = "flex";
+  currentSkeletonContainerOut.style.flexGrow = "1";
+  currentSkeletonContainerOut.style.display = "flex";
+  currentSkeleton.style.height = "10%";
+  currentSkeleton.style.flexGrow = "0";
+  savedSkeletons.style.flexGrow = "0";
+  createSkeleton.style.flexGrow = "0";
+  savedSkeletons.style.height = "10%";
+  createSkeleton.style.height = "10%";
+  savedSkeletonsContainer.style.display = "none";
+  if (savedSkeletonsContainer.hasChildNodes()) {
+    while (savedSkeletonsContainer.firstChild) {
+        savedSkeletonsContainer.removeChild(savedSkeletonsContainer.firstChild);
+    }
+  }
+
+}
+
+function saveSkeletonFun() {
+  //var length = canvasAnimation.skeletonCollection.length;
+  //var result = false;
+  canvasAnimation.skeleton.push(canvasAnimation.points);
+  canvasAnimation.skeleton.push(canvasAnimation.lines);
+  canvasAnimation.skeleton.push(canvasAnimation.skeletonImages);
+  canvasAnimation.skeleton.push(canvasAnimation.skeletonCounter);
+/*
+  for ( var i = 0; i <= length - 1; i++ ) {
+    if ( canvasAnimation.skeletonCollection[i][3] == myState.skeletonCounter ) {
+      result = confirm("There is ")
+    }
+  }
+*/
+  canvasAnimation.skeletonCollection.push(canvasAnimation.skeleton);
+}
+
+function showSavedSkeletons() {
+  var length = canvasAnimation.skeletonCollection.length;
+  var result = false;
+  currentSkeleton.style.display = "flex";
+  savedSkeletonsContainer.style.flexGrow = "1";
+  savedSkeletonsContainer.style.display = "flex";
+  currentSkeletonContainerOut.style.display = "none";
+  saveSkeleton.style.display = "none";
+  currentSkeleton.style.height = "10%";
+  currentSkeleton.style.flexGrow = "0";
+  savedSkeletons.style.flexGrow = "0";
+  createSkeleton.style.flexGrow = "0";
+  savedSkeletons.style.height = "10%";
+  createSkeleton.style.height = "10%";
+  for ( var i = 0; i <= length -1; i++ ) {
+    showSavedSkeletonsDiv(i);
+  }
+}
+
+function hideSavedSkeletons() {
+  savedSkeletonsContainer.style.display = "none";
+  if (savedSkeletonsContainer.hasChildNodes()) {
+    while (savedSkeletonsContainer.firstChild) {
+        savedSkeletonsContainer.removeChild(savedSkeletonsContainer.firstChild);
+    }
+  }
+  hideSkeletons();
+}
+
+function selectShowSavedSkeletons() {
+  if ( savedSkeletonsContainer.style.display == "flex" )
+    hideSavedSkeletons();
+  else showSavedSkeletons();
+}
+
+function showSavedSkeletonsDiv(i) {
+  var skeleton = document.createElement("div");
+  skeleton.id = "skeleton" + i;
+  skeleton.className = "imageContainer";
+  skeleton.title = i;
+  skeleton.style.flexGrow = "0";
+  skeleton.style.height = "70px";
+  var j = i+ 1;
+  skeleton.innerHTML = "Skeleton #" + j;
+
+  var deleteSkeletonDiv = document.createElement("div");
+  deleteSkeletonDiv.className = "deleteLineDiv";
+  deleteSkeletonDiv.id = "deleteSkeletonDiv" + i;
+  deleteSkeletonDiv.title = i;
+
+  var newSkeletonDiv = document.createElement("div");
+  newSkeletonDiv.className = "imageContainerDiv";
+  newSkeletonDiv.id = "newSkeletonDiv" + i;
+
+  skeleton.onclick = function() {
+    result = confirm("If you change skeletons now, some changes might not be saved. Are you sure you want to continue?");
+    if (result) {
+      canvasAnimation.points = [];
+      canvasAnimation.lines = [];
+      canvasAnimation.skeletonImages = [];
+      canvasAnimation.skeleton = [];
+      canvasAnimation.skeletonCounter = 0;
+      canvasAnimation.skeleton = canvasAnimation.skeletonCollection[skeleton.title];
+      canvasAnimation.points = canvasAnimation.skeleton[0];
+      canvasAnimation.lines = canvasAnimation.skeleton[1];
+      canvasAnimation.skeletonImages = canvasAnimation.skeleton[2]; 
+      canvasAnimation.skeletonCounter = canvasAnimation.skeleton[3]; 
+      changeCurrentSkeletonDiv(canvasAnimation.skeletonCounter);
+    }
+  }
+  deleteSkeletonDiv.onclick = function() {
+    canvasAnimation.skeletonCollection.splice(skeleton.title, 1);
+    savedSkeletonsContainer.removeChild(newSkeletonDiv);  
+
+  }
+  newSkeletonDiv.appendChild(skeleton);
+  newSkeletonDiv.appendChild(deleteSkeletonDiv);
+  savedSkeletonsContainer.appendChild(newSkeletonDiv);
+}
+
+function changeCurrentSkeletonDiv(count) {
+  currentSkeletonContainer.style.display = "none";
+  currentSkeletonContainer = document.getElementById("currentSkeletonContainer" + count);
+  currentSkeletonContainer.style.display = "flex";
+}
+
+function showSkeletons() {
+  currentSkeleton.style.display = "flex";
+  currentSkeletonContainerOut.style.flexGrow = "1";
+  currentSkeletonContainerOut.style.display = "flex";
+  currentSkeleton.style.height = "10%";
+  currentSkeleton.style.flexGrow = "0";
+  savedSkeletons.style.flexGrow = "0";
+  createSkeleton.style.flexGrow = "0";
+  savedSkeletons.style.height = "10%";
+  createSkeleton.style.height = "10%";
+  if (currentSkeletonContainerOut.hasChildNodes())
+    saveSkeleton.style.display = "flex";
+  savedSkeletonsContainer.style.display = "none";
+  if (savedSkeletonsContainer.hasChildNodes()) {
+    while (savedSkeletonsContainer.firstChild) {
+        savedSkeletonsContainer.removeChild(savedSkeletonsContainer.firstChild);
+    }
+  }
+}
+
+function hideSkeletons() {
+  currentSkeleton.style.flexGrow = "1";
+  currentSkeletonContainerOut.style.display = "none";
+  currentSkeleton.style.height = "auto";
+  savedSkeletons.style.flexGrow = "1";
+  createSkeleton.style.flexGrow = "1";
+  savedSkeletons.style.height = "auto";
+  createSkeleton.style.height = "auto";
+  saveSkeleton.style.display = "none";
+}
+
+function selectShowSkeletons() {
+  if (currentSkeletonContainerOut.style.display == "flex")
+    hideSkeletons();
+  else showSkeletons();
+}
+
 function initAnimate() {
-  var s = new CanvasStateA(document.getElementById("canvasSelectorA"));
+    canvasAnimation = new CanvasStateA(document.getElementById("canvasSelectorA"));
+  
+  //canvasAnimation.drawImageOnCanvas(sticky);
+
+    aSkeleton.removeEventListener("click", selectSkeletonOption, false);
+    aSkeleton.addEventListener("click", selectSkeletonOption, false);
+  
+  aCharacter.removeEventListener("click", selectCharacterOption, true);
+  aCharacter.addEventListener("click", selectCharacterOption, true);
+  
+  aSpriteSheet.removeEventListener("click", selectSpriteSheetOption, false);
+  aSpriteSheet.addEventListener("click", selectSpriteSheetOption, false);
+  
+  projectImage.removeEventListener("click", selectProjectImageOption, false);
+  projectImage.addEventListener("click", selectProjectImageOption, false);
+  
+  drawImageVar.removeEventListener("click", drawToAnimate, false);
+  drawImageVar.addEventListener("click", drawToAnimate, false); 
+
+  chooseLine.removeEventListener("click", hideChooseLine, false);
+  chooseLine.addEventListener("click", hideChooseLine, false);
+
+  flipImage.removeEventListener("click", flipImageOnCanvas, false);
+  flipImage.addEventListener("click", flipImageOnCanvas, false);
+
+  biggerImage.removeEventListener("click", biggerImageOnCanvas, false);
+  biggerImage.addEventListener("click", biggerImageOnCanvas, false);
+
+  smallerImage.removeEventListener("click", smallerImageOnCanvas, false);
+  smallerImage.addEventListener("click", smallerImageOnCanvas, false);
+
+  widerImage.removeEventListener("click", widerImageOnCanvas, false);
+  widerImage.addEventListener("click", widerImageOnCanvas, false);
+
+  narrowerImage.removeEventListener("click", narrowerImageOnCanvas, false);
+  narrowerImage.addEventListener("click", narrowerImageOnCanvas, false);
+
+  leftStickerHide.removeEventListener("click", leftStickerHidePanel, false);
+  leftStickerHide.addEventListener("click", leftStickerHidePanel, false);
+
+  leftStickerShow.removeEventListener("click", leftStickerShowPanel, false);
+  leftStickerShow.addEventListener("click", leftStickerShowPanel, false);
+
+  createSkeleton.removeEventListener("click", createSkeletonFun, false);
+  createSkeleton.addEventListener("click", createSkeletonFun, false);
+
+  saveSkeleton.removeEventListener("click", saveSkeletonFun, false);
+  saveSkeleton.addEventListener("click", saveSkeletonFun, false);
+
+  savedSkeletons.removeEventListener("click", selectShowSavedSkeletons, false);
+  savedSkeletons.addEventListener("click", selectShowSavedSkeletons, false);  
+
+  currentSkeleton.removeEventListener("click", selectShowSkeletons, false);
+  currentSkeleton.addEventListener("click", selectShowSkeletons, false);  
 }
 
 
