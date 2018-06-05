@@ -15,13 +15,6 @@ body {margin:0;}
 	position: absolute;
 }
 
-.backToAnimate {
-	top: 0;
-	right: 0;
-	margin-left: 0;
-	
-}
-
 .init {
 	width: 100%;
 	height: 100vh;
@@ -179,94 +172,13 @@ body {margin:0;}
 }
 
 .rightPanel {
-	display: flex;
-	flex-direction: column;
-	align-content: stretch;
-	align-self: center;
-	height: 95%;
-	width: 20%;
-	border: 1px solid rgba(0, 255, 0, 0.8);
-	margin-right: 2%;
-	margin-left: 1%;
-	z-index: 1;
-}
-
-.animateOptions {
-	display: flex;
-	flex-direction: column;
-	width: 100%;
-	height: 15%;
-	border: 1px solid rgba(0, 0, 255, 0.8);
-	justify-content: center;
-	align-items: center;
-	text-align: center;
-	font-family: "Verdana";
-	font-weight: bold;
-	font-size: 190%;
-	color: #4cc35b;
-}
-
-.subOptions {
-	display: flex;
-	flex-direction: column;
-	align-content: stretch;
-	width: 100%;
-	flex-grow: 1;
-	border: 1px solid rgba(255, 0, 0, 0.8);
-}
-
-.lineDiv {
-	width: 100%;
-	height: auto;
-	border: 1px solid rgba(0, 255, 0, 0.8);
-}
-
-.arrow {
-	width: 5%;
-	height: 100%;
-	border: 1px solid rgba(0, 255, 0, 0.8);
-}
-
-.subCharOpt {
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	text-align: center;
-	font-family: "Verdana";
-	font-weight: 600;
-	font-size: 130%;
-	color: #0B6623;
-	width: 100%;
-	flex-grow: 1;
-	border: 1px solid rgba(0, 0, 0, 0.8);
-	z-index: 1;
-}
-
-.subCharOpts {
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	align-items: center;
-	width: 100%;
-	flex-grow: 1;
-	border: 1px solid rgba(0, 0, 255, 0.8);
-	z-index: 1;
-}
-
-.imageContainer {
-	display: flex;
-	width: 100%;
-	flex-grow: 1;
-	border: 1px solid rgba(255, 0, 0, 0.8);
-	z-index: 1;
-}
-
-.pImages {
-	margin: 10px;
-}
-
-#aSave {
-	margin-top: 300px;
+  align-self: center;
+  height: 95%;
+  width: 20%;
+  border: 1px solid rgba(0, 255, 0, 0.8);
+  margin-right: 2%;
+  margin-left: 1%;
+  z-index: 1;
 }
 
 .save {
@@ -277,12 +189,6 @@ body {margin:0;}
 	font-family: "Verdana";
 	font-weight: bold;
 	
-}
-
-#filechooser {
-	width: 100%;
-	height: 100%;
-	border: 1px solid rgba(255, 0, 0, 0.8);
 }
 
 
