@@ -53,77 +53,86 @@ var savedSkeletonsContainer = document.getElementById("savedSkeletonsContainer")
 var canvasAnimation;
 var lineCounter = 0;
 
+function toAnimate() {
+  init.style.display = "none";
+  animatePanel.style.display = "flex";
+  initAnimate();
+}
+
+function toDraw() {
+  init.style.display = "none";
+  drawPanel.style.display = "grid";
+  initDraw();
+}
+
+
+
 function start() {
-	letsDraw.addEventListener("click", function(){
-		init.style.display = "none";
-		drawPanel.style.display = "grid";
-		initDraw();
-	});
 
-	letsAnimate.addEventListener("click", function(){
-		init.style.display = "none";
-		animatePanel.style.display = "grid";
-		initAnimate();
-	});
+  rightStickerShowD.addEventListener("click", function(){
+    showRightPanelD();
+  });
 
-	rightStickerShowD.addEventListener("click", function(){
-		showRightPanelD();
-	});
+  rightStickerHideD.addEventListener("click", function(){
+    hideRightPanelD();
+  });
 
-	rightStickerHideD.addEventListener("click", function(){
-		hideRightPanelD();
-	});
+  rightStickerShowA.addEventListener("click", function(){
+    showRightPanelA();
+  });
 
-	rightStickerShowA.addEventListener("click", function(){
-		showRightPanelA();
-	});
+  rightStickerHideA.addEventListener("click", function(){
+    hideRightPanelA();
+  });
 
-	rightStickerHideA.addEventListener("click", function(){
-		hideRightPanelA();
-	});
-
-	logo.addEventListener("click", function(){
-		backToInit();
-	});
+  logo.addEventListener("click", function(){
+    backToInit();
+  });
 }
 
 function backToInit() {
-	if (drawPanel.style.display != "none") 
-		drawPanel.style.display = "none";
-	else if (animatePanel.style.display != "none") 
-		animatePanel.style.display = "none";
-	
-	init.style.display = "grid";
+  if (drawPanel.style.display != "none") 
+    drawPanel.style.display = "none";
+  else if (animatePanel.style.display != "none") 
+    animatePanel.style.display = "none";
+  
+  init.style.display = "grid";
 
 }
 
 function showRightPanelD()
 {
-	rightPanelD.style.display = "flex";
-	rightStickerHideD.style.display = "flex";
-	rightStickerShowD.style.display = "none";
+  rightPanelD.style.display = "flex";
+  rightStickerHideD.style.display = "flex";
+  rightStickerShowD.style.display = "none";
 }
 
 function hideRightPanelD()
 {
-	rightPanelD.style.display = "none";
-	rightStickerHideD.style.display = "none";
-	rightStickerShowD.style.display = "flex";
+  rightPanelD.style.display = "none";
+  rightStickerHideD.style.display = "none";
+  rightStickerShowD.style.display = "flex";
 }
 
 function showRightPanelA()
 {
-	rightPanelA.style.display = "flex";
-	rightStickerHideA.style.display = "flex";
-	rightStickerShowA.style.display = "none";
+  rightPanelA.style.display = "flex";
+  rightStickerHideA.style.display = "flex";
+  rightStickerShowA.style.display = "none";
 }
 
 function hideRightPanelA()
 {
-	rightPanelA.style.display = "none";
-	rightStickerHideA.style.display = "none";
-	rightStickerShowA.style.display = "flex";
+  rightPanelA.style.display = "none";
+  rightStickerHideA.style.display = "none";
+  rightStickerShowA.style.display = "flex";
+  if (chooseLine.style.display == "flex") {
+    chooseLine.style.display = "none";
+    displayCharacter();
+  }
 }
+
+//
 
 
 
