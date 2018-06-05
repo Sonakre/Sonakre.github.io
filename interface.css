@@ -212,9 +212,9 @@ body {margin:0;}
 	justify-content: right;
 	width: 50px;
 	height: 100px;
-	border: 1px solid rgba(0, 0, 0, 0.8);
+	/*border: 1px solid rgba(0, 0, 0, 0.8);*/
 	z-index: 1;
-	background-color: #5B8C5A;
+	background-color: #94D1BE;
 }
 
 .leftSticker .show {
@@ -230,11 +230,12 @@ body {margin:0;}
 	align-self: flex-end;
 	height: 83%;
 	width: 20%;
-	border: 1px solid rgba(255, 0, 0, 0.8);
+	/*border: 1px solid rgba(255, 0, 0, 0.8);*/
 	margin-right: 1%;
 	margin-left: 2%;
 	z-index: 1;
 	margin-bottom: 25px;
+	background-color: #DAF0EE;
 }
 
 .animateOptions {
@@ -291,6 +292,9 @@ body {margin:0;}
 	height: auto;
 	/*border: 1px solid rgba(0, 255, 0, 0.8);*/
 	background-color: #ffffff;
+	background-image: url(web-images/delete.png);
+	background-size: contain; 
+	background-repeat: no-repeat;
 }
 
 .lineImage {

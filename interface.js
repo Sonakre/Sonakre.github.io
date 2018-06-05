@@ -1019,8 +1019,8 @@ function projectImagesPreview() {
 
 	var image = document.createElement("img");
 	
-	image.src = "images/imagetry.png";
-	image.id = "imagetry.png";
+	image.src = "images/fore-arm.png";
+	image.id = "fore-arm.png";
 	image.className = "pImages";
 	image.width = "70";
 	image.height = "100";
@@ -1203,7 +1203,7 @@ function flipImageOnCanvas() {
 	var imageToSplice = 0;
 	for ( var i = 0; i <= length - 1; i++ ) {
 		if (images[i].counter == canvasAnimation.imageSlelected.title) {
-			images[i].rotationOffset = images[i].rotationOffset + (180 * Math.PI / 180);
+			//images[i].rotationOffset = images[i].rotationOffset + (180 * Math.PI / 180);
 			var p1, p2;
 			p2 = images[i].p1;
 			p1 = images[i].p2;
