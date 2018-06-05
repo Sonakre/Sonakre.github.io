@@ -9,8 +9,9 @@ body {margin:0;}
 	margin: 10px;
 	width: 15%;
 	height: 10%;
-	border: 1px solid;
-	border-color: #68da23;
+	/*border: 1px solid;*/
+	/*border-color: #68da23;*/
+	background-color: #94D1BE;
 	z-index: 1;
 	position: absolute;
 }
@@ -53,7 +54,7 @@ body {margin:0;}
 	top: 0px;
 	bottom: 0px;
 	position: absolute;
-	background-color: #575761;
+	background-color: #9DB5B2;
 }
 
 #dPOverlay {
@@ -174,9 +175,9 @@ body {margin:0;}
 	justify-content: right;
 	width: 50px;
 	height: 100px;
-	border: 1px solid rgba(0, 0, 0, 0.8);
+	/*border: 1px solid rgba(0, 0, 0, 0.8);*/
 	z-index: 1;
-	background-color: #5B8C5A;
+	background-color: #94D1BE;
 }
 
 .rightSticker .show {
@@ -192,11 +193,11 @@ body {margin:0;}
 	align-self: center;
 	height: 95%;
 	width: 20%;
-	border: 1px solid rgba(0, 255, 0, 0.8);
+	/*border: 1px solid rgba(0, 255, 0, 0.8);*/
 	margin-right: 2%;
 	margin-left: 1%;
 	z-index: 1;
-	background-color: #9FD8CB;
+	background-color: #DAF0EE;
 }
 
 .leftSticker {
@@ -235,15 +236,15 @@ body {margin:0;}
 	flex-direction: column;
 	width: 100%;
 	height: 15%;
-	border: 1px solid rgba(0, 0, 255, 0.8);
+	/*border: 1px solid rgba(0, 0, 255, 0.8);*/
 	justify-content: center;
 	align-items: center;
 	text-align: center;
 	font-family: "Verdana";
 	font-weight: bold;
 	font-size: 190%;
-	color: #575761;
-	background-color: #8ACB88;
+	color: #3b413c;
+	background-color: #94D1BE;
 }
 
 .imageCanvasOptions {
@@ -311,7 +312,8 @@ body {margin:0;}
 	color: #0B6623;
 	width: 100%;
 	flex-grow: 1;
-	border: 1px solid rgba(0, 0, 0, 0.8);
+	/*border: 1px solid rgba(0, 0, 0, 0.8);*/
+	background-color: #BFBDC1;
 	z-index: 1;
 }
 
@@ -322,7 +324,7 @@ body {margin:0;}
 	align-items: center;
 	width: 100%;
 	flex-grow: 1;
-	border: 1px solid rgba(0, 0, 255, 0.8);
+	/*border: 1px solid rgba(0, 0, 255, 0.8);*/
 	z-index: 1;
 }
 
@@ -330,7 +332,7 @@ body {margin:0;}
 	/*display: flex;*/
 	width: 100%;
 	flex-grow: 1;
-	border: 1px solid rgba(255, 0, 0, 0.8);
+	/*border: 1px solid rgba(255, 0, 0, 0.8);*/
 	z-index: 1;
 }
 
@@ -399,7 +401,7 @@ body {margin:0;}
 }
 
 #aSave {
-	margin-top: 300px;
+	margin-top: 320px;
 }
 
 
@@ -432,4 +434,5 @@ body {margin:0;}
 	height: 100%;
 	border: 1px solid rgba(255, 0, 0, 0.8);
 }
+
 
