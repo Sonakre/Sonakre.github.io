@@ -141,135 +141,187 @@ function hideRightPanelA()
 
 
 
-
 function CanvasStateD(canvas) {
-	var wrapper = document.getElementById("canvasD");
-  	canvas.width = wrapper.offsetWidth;
-  	canvas.height = wrapper.offsetHeight;
-  	canvas.backgroundColor = "#ffffff";
-  	this.canvas = canvas;
-  	this.width = canvas.width;
-  	this.height = canvas.height;
-  	this.ctx = canvas.getContext("2d");
+  var wrapper = document.getElementById("canvasD");
+    canvas.width = wrapper.offsetWidth;
+    canvas.height = wrapper.offsetHeight;
+    canvas.backgroundColor = "#ffffff";
+    this.canvas = canvas;
+    this.width = canvas.width;
+    this.height = canvas.height;
+    this.ctx = canvas.getContext("2d");
 
-  	this.mouse = {x: 0, y: 0};
-	this.last_mouse = {x: 0, y: 0};
+    this.mouse = {x: 0, y: 0};
+  this.last_mouse = {x: 0, y: 0};
 
-  	this.ctx.strokeStyle = "#ff0000";
-	this.ctx.lineJoin = "round";
-	this.ctx.lineWidth = 5;
+    this.ctx.strokeStyle = "#ff0000";
+  this.ctx.lineJoin = "round";
+  this.ctx.lineWidth = 5;
 
-  	this.drawPoints = [];
-	var clickDrag = [];
-	this.paint = false;
+    this.drawPoints = [];
+  var clickDrag = [];
+  this.paint = false;
 
-  	var myState = this;
+    var myState = this;
 
-  	this.ctx.lineWidth = 5;
-	this.ctx.lineJoin = 'round';
-	this.ctx.lineCap = 'round';
-	this.ctx.strokeStyle = 'blue';
+    this.ctx.lineWidth = 5;
+  this.ctx.lineJoin = 'round';
+  this.ctx.lineCap = 'round';
+  this.ctx.strokeStyle = 'blue';
 
-	canvas.addEventListener("mousedown", function(e) {
-		
-		myState.mouse = myState.getMouse(e);
-		myState.last_mouse.x = myState.mouse.x;
-		myState.last_mouse.y = myState.mouse.y;
-				
-		myState.paint = true;
+  canvas.addEventListener("mousedown", function(e) {
+    
+    myState.mouse = myState.getMouse(e);
+    myState.last_mouse.x = myState.mouse.x;
+    myState.last_mouse.y = myState.mouse.y;
+        
+    myState.paint = true;
 
-		myState.addPoint(myState.mouse.x - 2, myState.mouse.y - 2);
-		
-		//myState.draw();
-	
-	}, true);
+    myState.addPoint(myState.mouse.x - 2, myState.mouse.y - 2);
+    
+    //myState.draw();
+  
+  }, true);
 
-	canvas.addEventListener("mouseup", function(e) {				
-		myState.paint = false;
-	
-	}, true);
+  canvas.addEventListener("mouseup", function(e) {        
+    myState.paint = false;
+  
+  }, true);
 
-	canvas.addEventListener("mousemove", function(e) {		
-		if ( myState.paint ) {
-			myState.last_mouse.x = myState.mouse.x;
-			myState.last_mouse.y = myState.mouse.y;
-			
-			myState.mouse.x = myState.getMouse(e).x;
-			myState.mouse.y = myState.getMouse(e).y;
-			
+  canvas.addEventListener("mousemove", function(e) {    
+    if ( myState.paint ) {
+      myState.last_mouse.x = myState.mouse.x;
+      myState.last_mouse.y = myState.mouse.y;
+      
+      myState.mouse.x = myState.getMouse(e).x;
+      myState.mouse.y = myState.getMouse(e).y;
+      
 
-			myState.addPoint(myState.mouse.x - 2, myState.mouse.y - 2, true);
-			myState.draw();
-		}		
-	}, true);
+      myState.addPoint(myState.mouse.x - 2, myState.mouse.y - 2, true);
+      myState.draw();
+    }   
+  }, true);
 }
 
 CanvasStateD.prototype.addPoint = function( x, y ) {
-	this.drawPoints.push(x);
-	this.drawPoints.push(y);
+  this.drawPoints.push(x);
+  this.drawPoints.push(y);
 }
 
 CanvasStateD.prototype.draw = function() {
-	var myState = this;
-	var ctx = myState.ctx;
-	var points = myState.drawPoints;
-	clear(myState);
+  var myState = this;
+  var ctx = myState.ctx;
+  var points = myState.drawPoints;
+  clear(myState);
 
-	ctx.beginPath();
-	ctx.moveTo(myState.last_mouse.x, myState.last_mouse.y);
-	ctx.lineTo(myState.mouse.x, myState.mouse.y);
-	ctx.closePath();
-	ctx.stroke();	
+  ctx.beginPath();
+  ctx.moveTo(myState.last_mouse.x, myState.last_mouse.y);
+  ctx.lineTo(myState.mouse.x, myState.mouse.y);
+  ctx.closePath();
+  ctx.stroke(); 
+}
+
+function paintRed() {
+  s.ctx.strokeStyle = 'red';
+  s.ctx.lineWidth = 5;
+}
+
+function paintYellow() {
+  s.ctx.strokeStyle = 'yellow';
+  s.ctx.lineWidth = 5;
+}
+
+function paintBlue() {
+  s.ctx.strokeStyle = 'blue';
+  s.ctx.lineWidth = 5;
+}
+
+function paintViolet() {
+  s.ctx.strokeStyle = 'violet';
+  s.ctx.lineWidth = 5;
+}
+
+function paintPurple() {
+  s.ctx.strokeStyle = 'mediumPurple';
+  s.ctx.lineWidth = 5;
+}
+
+function paintOrange() {
+  s.ctx.strokeStyle = 'orange';
+  s.ctx.lineWidth = 5;
+}
+
+function paintGreen() {
+  s.ctx.strokeStyle = 'green';
+  s.ctx.lineWidth = 5;
+}
+
+function paintBlack() {
+  s.ctx.strokeStyle = 'black';
+  s.ctx.lineWidth = 5;
+}
+
+function paintWhite() {
+  s.ctx.strokeStyle = 'white';
+  s.ctx.lineWidth = 5;
+}
+
+function paintEraser() {
+  s.ctx.strokeStyle = s.canvas.backgroundColor;
+  s.ctx.lineWidth = 20;
+}
+
+function fromDrawToAnimate() {
+  animatePanel.style.display= "grid";
+  drawPanel.style.display = "none";
+  backToAnimate.style.display = "none";
+  initAnimate();
 }
 
 function initDraw() {
-	var s = new CanvasStateD(document.getElementById("canvasSelectorD"));
+  var s = new CanvasStateD(document.getElementById("canvasSelectorD"));
 
-	red.addEventListener("click", function(){
-		s.ctx.strokeStyle = 'red';
-		s.ctx.lineWidth = 5;
-	});
-	yellow.addEventListener("click", function(){
-		s.ctx.strokeStyle = 'yellow';
-		s.ctx.lineWidth = 5;
-	});
-	blue.addEventListener("click", function(){
-		s.ctx.strokeStyle = 'blue';
-		s.ctx.lineWidth = 5;
-	});
-	pink.addEventListener("click", function(){
-		s.ctx.strokeStyle = 'violet';
-		s.ctx.lineWidth = 5;
-	});
-	purple.addEventListener("click", function(){
-		s.ctx.strokeStyle = 'mediumPurple';
-		s.ctx.lineWidth = 5;
-	});
-	orange.addEventListener("click", function(){
-		s.ctx.strokeStyle = 'orange';
-		s.ctx.lineWidth = 5;
-	});
-	green.addEventListener("click", function(){
-		s.ctx.strokeStyle = 'green';
-		s.ctx.lineWidth = 5;
-	});
-	black.addEventListener("click", function(){
-		s.ctx.strokeStyle = 'black';
-		s.ctx.lineWidth = 5;
-	});
-	white.addEventListener("click", function(){
-		s.ctx.strokeStyle = 'white';
-		s.ctx.lineWidth = 5;
-	});
-	eraser.addEventListener("click", function(){
-		s.ctx.strokeStyle = s.canvas.backgroundColor;
-		s.ctx.lineWidth = 20;
-	});
-	saveD.addEventListener("click", function(){
-		var dataURL = s.canvas.toDataURL();
-		console.log(dataURL);
-	});
+  red.removeEventListener("click", paintRed, true);
+  red.addEventListener("click", paintRed, true);
+
+  yellow.removeEventListener("click", paintYellow, true);
+  yellow.addEventListener("click", paintYellow, true);
+  
+  blue.removeEventListener("click", paintBlue, true);
+  blue.addEventListener("click", paintBlue, true);
+
+  pink.removeEventListener("click", paintViolet, true);
+  pink.addEventListener("click", paintViolet, true);
+  
+  purple.removeEventListener("click", paintPurple, true);
+  purple.addEventListener("click", paintPurple, true);
+  
+  orange.removeEventListener("click", paintOrange, true);
+  orange.addEventListener("click", paintOrange, true);
+  
+  green.removeEventListener("click", paintGreen, true);
+  green.addEventListener("click", paintGreen, true);
+  
+  black.removeEventListener("click", paintBlack, true);
+  black.addEventListener("click", paintBlack, true);
+  
+  white.removeEventListener("click", paintWhite, true);
+  white.addEventListener("click", paintWhite, true);
+  
+  eraser.removeEventListener("click", paintEraser, true);
+  eraser.addEventListener("click", paintEraser, true);
+  
+  saveD.addEventListener("click", function(){
+    var dataURL = s.canvas.toDataURL();
+    //console.log(dataURL);
+  });
+
+  backToAnimate.removeEventListener("click", fromDrawToAnimate, true);
+  backToAnimate.addEventListener("click", fromDrawToAnimate, true);
 }
+
+//
+
 
 
 
