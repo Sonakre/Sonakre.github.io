@@ -51,6 +51,7 @@ var savedSkeletons = document.getElementById("savedSkeletons");
 var saveSkeleton = document.getElementById("saveSkeleton");
 var savedSkeletonsContainer = document.getElementById("savedSkeletonsContainer");
 var canvasAnimation;
+var canvasDraw;
 var lineCounter = 0;
 
 function toAnimate() {
@@ -220,53 +221,53 @@ CanvasStateD.prototype.draw = function() {
 }
 
 function paintRed() {
-  s.ctx.strokeStyle = 'red';
-  s.ctx.lineWidth = 5;
+  canvasDraw.ctx.strokeStyle = 'red';
+  canvasDraw.ctx.lineWidth = 5;
 }
 
 function paintYellow() {
-  s.ctx.strokeStyle = 'yellow';
-  s.ctx.lineWidth = 5;
+  canvasDraw.ctx.strokeStyle = 'yellow';
+  canvasDraw.ctx.lineWidth = 5;
 }
 
 function paintBlue() {
-  s.ctx.strokeStyle = 'blue';
-  s.ctx.lineWidth = 5;
+  canvasDraw.ctx.strokeStyle = 'blue';
+  canvasDraw.ctx.lineWidth = 5;
 }
 
 function paintViolet() {
-  s.ctx.strokeStyle = 'violet';
-  s.ctx.lineWidth = 5;
+  canvasDraw.ctx.strokeStyle = 'violet';
+  canvasDraw.ctx.lineWidth = 5;
 }
 
 function paintPurple() {
-  s.ctx.strokeStyle = 'mediumPurple';
-  s.ctx.lineWidth = 5;
+  canvasDraw.ctx.strokeStyle = 'mediumPurple';
+  canvasDraw.ctx.lineWidth = 5;
 }
 
 function paintOrange() {
-  s.ctx.strokeStyle = 'orange';
-  s.ctx.lineWidth = 5;
+  canvasDraw.ctx.strokeStyle = 'orange';
+  canvasDraw.ctx.lineWidth = 5;
 }
 
 function paintGreen() {
-  s.ctx.strokeStyle = 'green';
-  s.ctx.lineWidth = 5;
+  canvasDraw.ctx.strokeStyle = 'green';
+  canvasDraw.ctx.lineWidth = 5;
 }
 
 function paintBlack() {
-  s.ctx.strokeStyle = 'black';
-  s.ctx.lineWidth = 5;
+  canvasDraw.ctx.strokeStyle = 'black';
+  canvasDraw.ctx.lineWidth = 5;
 }
 
 function paintWhite() {
-  s.ctx.strokeStyle = 'white';
-  s.ctx.lineWidth = 5;
+  canvasDraw.ctx.strokeStyle = 'white';
+  canvasDraw.ctx.lineWidth = 5;
 }
 
 function paintEraser() {
-  s.ctx.strokeStyle = s.canvas.backgroundColor;
-  s.ctx.lineWidth = 20;
+  canvasDraw.ctx.strokeStyle = canvasDraw.canvas.backgroundColor;
+  canvasDraw.ctx.lineWidth = 20;
 }
 
 function fromDrawToAnimate() {
@@ -277,7 +278,7 @@ function fromDrawToAnimate() {
 }
 
 function initDraw() {
-  var s = new CanvasStateD(document.getElementById("canvasSelectorD"));
+  canvasDraw = new CanvasStateD(document.getElementById("canvasSelectorD"));
 
   red.removeEventListener("click", paintRed, true);
   red.addEventListener("click", paintRed, true);
@@ -370,6 +371,16 @@ function ImageForCanvas( img, p1, p2, rotation, height, counter, heightOffset, w
 ImageForCanvas.prototype.putImageOnCanvas = function(ctx, myState) {
   ctx.save();
     this.p1.draw(ctx);
+
+    var dx = this.p2.x - this.p1.x;
+  var dy = this.p2.y - this.p1.y;
+  var distance = dist(this.p1, this.p2);
+  var rotation = Math.atan2(dy, dx);
+  var angleDegrees = rotation * (180/Math.PI);
+  var radians = (angleDegrees - 90) * (Math.PI/180);
+    this.rotation = radians;
+    this.height = distance;
+
     ctx.translate(this.p1.x, this.p1.y);
   ctx.rotate(this.rotation + this.rotationOffset);
   ctx.drawImage(this.img, -this.img.width/2 - this.widthOffset/2, -this.heightOffset/2, this.img.width + this.widthOffset, this.height + this.heightOffset);
@@ -516,6 +527,7 @@ function CanvasStateA(canvas) {
         points[i].x = mouse.x;
         points[i].y = mouse.y;
       }
+      /*
       for (var i = 0; i <= li -1; i++ ){
         var dx = lines[i][1].x - lines[i][0].x;
     var dy = lines[i][1].y - lines[i][0].y;
@@ -526,6 +538,7 @@ function CanvasStateA(canvas) {
         images[i].rotation = radians;
         images[i].height = distance;
       }
+      */
     }
 
   }, true);
