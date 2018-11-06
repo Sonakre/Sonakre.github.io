@@ -1,197 +1,37 @@
 <!DOCTYPE html>
-
 <html>
-<head>
-<title>TFG -SC</title>
-	<link rel="stylesheet" ype="text/css" href="interface.css">
+	<head>
+		<title>Page Title</title>
+		<link rel="stylesheet" ype="text/css" href="index.css">
+	</head>
+	<body onload="init();">
 
-	
-</head>
-
-<body onload="start();" >
-	<div class="wrapper" id="wrapper">
-
-		<div class="init" id="init">
-			<div class="options" id="options1" onclick="toDraw();">
-				<div class="box" id="letsDraw">
-					Let's Draw!
-				</div>
-			</div>
-			<div class="options" id="options2" onclick="toAnimate();">
-				<div class="box" id="letsAnimate">
-					Let's Animate!
-				</div>
-			</div>
-		</div>
-
-
-		
-
-		
-		<div class="init" id="drawPanel" style="display: none;">
-			<div id="dPOverlay">
-				<div class="rightSticker show" id="rightStickerShowD">
-				</div>
-				<div class="rightSticker hide" id="rightStickerHideD" style="display: none;">
-				</div>
-				<div class="rightPanel" id="rightPanelD" style="display:none;">
-					<div class="save" id="saveD">SAVE
-						<form action='https://www.getform.org/u/723d0921-1c1c-42c0-9f75-2ecd9fabd644' enctype="multipart/form-data" method="POST" name="image">
-        <h2>Upload File</h2>
-        <label for="fileSelect">Filename:</label>
-        <input type="file" name="photo" id="fileSelect">
-        <input type="submit" name="submit" value="Upload">
-        <p><strong>Note:</strong> Only .jpg, .jpeg, .gif, .png formats allowed to a max size of 5 MB.</p>
-    </form>
-					</div>	
-				</div>
-				<div class="logo backToAnimate" id="backToAnimate" style="display: none;">Back</div>
-			</div>
-			<div id="dP">
-				<div class="canvas" id="canvasD">
-					<canvas  id="canvasSelectorD"></canvas>
-				</div>
-				<div class="bottomPanel" id="drawColors">
-					<div class="colourList">
-						<div class="colours" id="red" style="background-color: #ff0000;"></div>
-						<div class="colours" id="yellow" style="background-color: #ffff00;"></div>
-						<div class="colours" id="blue" style="background-color: #0000ff;"></div>
-						<div class="colours" id="pink" style="background-color: #EE82EE;"></div>
-						<div class="colours" id="purple" style="background-color: #9370DB;"></div>
-						<div class="colours" id="orange" style="background-color: #FFA500;"></div>
-						<div class="colours" id="green" style="background-color: #00ff00;"></div>
-						<div class="colours" id="black" style="background-color: #000000;"></div>
-						<div class="colours" id="white" style="background-color: #ffffff; border: 1px solid rgba(0,0,0, 1);"></div>
-					</div>
-					<div class="eraser" id="eraser"></div>
-				</div>
-
+		<div class="container">
+			<div class="options" id="optionsWrapper">
 				
+				<div class="option" id="createMode">
+					Create Mode
+				</div>
+				<div class="option" id="selectMode">
+					Select Mode
+				</div>
+				<div class="option" id="changeName" style="display:none;">
+					Node Name
+				</div>
+				<div class="option" id="tree">
+					Print tree
+				</div>
+
 			</div>
-			
-		</div>
 
+			<div class="canvasWrapper" id="canvasWrapper">
 
+				<canvas id="canvas"></canvas>
 
-		<div class="chooseLine" id="chooseLine">Choose which line to attatch the image</div>
-
-		<div class="init" id="animatePanel" style="display: none;">
-			<div class="leftPanel" id="leftPanel" style="display: none;">
-				<div class="animateOptions imageCanvasOptions" id="flipImage">
-					Flip Image 180º
-					<div class="addToSkeleton imageOnCanvasIcon" id="flipImageIcon" style="background-image: url(web-images/flip.png); background-size: contain; background-repeat: no-repeat;"></div>
-				</div>
-				<div class="animateOptions imageCanvasOptions" id="biggerImage">Enlarge
-					<div class="addToSkeleton imageOnCanvasIcon" id="biggerImageIcon" style="background-image: url(web-images/larger.png); background-size: contain; background-repeat: no-repeat;"></div>
-				</div>
-				<div class="animateOptions imageCanvasOptions" id="smallerImage">Shorten
-					<div class="addToSkeleton imageOnCanvasIcon" id="smallerImageIcon" style="background-image: url(web-images/shorter.png); background-size: contain; background-repeat: no-repeat;"></div>
-				</div>
-				<div class="animateOptions imageCanvasOptions" id="widerImage" >Widen
-					<div class="addToSkeleton imageOnCanvasIcon" id="widerImageIcon" style="background-image: url(web-images/wider.png); background-size: contain; background-repeat: no-repeat;"></div>
-				</div>
-				<div class="animateOptions imageCanvasOptions" id="narrowerImage">Narrow
-					<div class="addToSkeleton imageOnCanvasIcon" id="narrowerImageIcon" style="background-image: url(web-images/narrower.png); background-size: contain; background-repeat: no-repeat;"></div>
-				</div>
 			</div>
-			<div class="leftSticker hide" id="leftStickerHide" style="display: none;"></div>
-			<div class="leftSticker show" id="leftStickerShow" style="display: none;"></div>
-			<div id="dPOverlay">
-				<div class="rightSticker show" id="rightStickerShowA">
-				</div>
-				<div class="rightSticker hide" id="rightStickerHideA" style="display: none;">
-				</div>
-				<div class="rightPanel" id="rightPanelA" style="display: none;">
-					<div class="animateOptions" id="aSkeleton" > Skeleton
-					</div>
-					<div class="subOptions" id="subSkeleton" style="display: none;">
-						<div class="subCharOpt" id="currentSkeleton" style="display: none;">Skeleton
-						</div>
-						<div class="subOptions" id="currentSkeletonContainerOut" style="display: none;">
-							<div class="subOptions" id="currentSkeletonContainer0" title="0"></div>
-						</div>
-						
-						<div class="animateOptions" id="saveSkeleton" style="display: none;">Save</div>
-						<div class="subCharOpt" id="createSkeleton" style="flex-grow: 1;">Create a new Skeleton</div>
-						<div class="subCharOpt" id="savedSkeletons" style="flex-grow: 1;"> Show Saved Skeletons</div>
-						<div class="subOptions" id="savedSkeletonsContainer" style="display: none;"></div>
-					</div>
-					
-					<div class="animateOptions" id="aCharacter"> Character
-						<!--
-						<div class="subOptions" id="subCharacter" style="display: none;">
-						</div>
-						-->
-					</div>
-					<div class="subCharOpts" id="subCharOpts" style="display: none;">
-							<div class="subCharOpt" id="projectImage" style="flex-grow: 1;">Project Images</div>
-							<div class="imageContainer" id="imageContainer" style="display: none;">
-							</div>
-							<div class="subCharOpt" id="uploadImage" style="flex-grow: 1;"> Upload new Image</div>
-							<div class="subCharOpt" id="drawImageVar" style="flex-grow: 1;">Draw new Image</div>
-						</div>
-					<div class="animateOptions" id="aSpritesheet"> Sprite Sheet
-						<div class="subOptions" id="subSpriteSheet" style="display: none;"></div>
-					</div>
-					<div class="animateOptions" id="aSave"> Save
-					</div>
-				</div>
-			</div>
-			<div id="dP">
-				<div class="canvas" id="canvasA">
-					<canvas id="canvasSelectorA"></canvas>
-				</div>
-			</div>
-			
-			
-
 
 		</div>
-
-
-
-		<div class="logo" id="logo"> Logo
-		</div>
-
-		
-		
-		
-
-	</div>
-
-<!--
-	<div class="container">
-			<div class="leftSticker show" id="leftStickerShow">
-			</div>
-			<div class="leftSticker hide" id="leftStickerHide" style="display: none;">
-		</div>
-		<div class="leftPanel" id="leftPanel" style="display: none;">
-		</div>
-		<div class="canvas" id="canvas" style="display: none;">
-			<canvas></canvas>
-		</div>
-		<div class="rightPanel" id="rightPanel" style="display: none;">
-		</div>
-
-			<div class="column" id="left_column">1</div>
-			<div class="column" id="canvas">
-				<canvas></canvas>
-			</div>
-			<div class="column" id="right_column">3</div> 
-		
-	  <div class="column" id="footer">4</div> 
-	</div>
 
 	<script type="text/javascript" src="canvas.js"></script>
-
-	<script type="text/javascript" src="skeleton.js"></script>
-
-	<script type="text/javascript" src="interface.js"></script>
--->
-
-
-<script type="text/javascript" src="interface.js"></script>
-
-
-</body>
+	</body>
 </html>
