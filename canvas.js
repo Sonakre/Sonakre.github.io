@@ -1,3 +1,6 @@
+//import * as mat3 from "./matrix/mat3.js";
+//var mat3 = import("./matrix/mat3.js");
+
 function Tree() {
 	this.root = null;
 }
@@ -7,7 +10,7 @@ function Node() {
 	this.children = [];
 	this.name = "no name";
 	this.point = null;
-	this.translateMatrix = [1,0,0,1,0,0,0,0,1];
+	//this.translateMatrix = [1,0,0,1,0,0,0,0,1];
 }
 
 function Point(x, y, r, fill) {
@@ -29,6 +32,15 @@ Point.prototype.draw = function(ctx) {
   ctx.beginPath();
   ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
   ctx.fill();
+}
+
+// Draws line
+Point.prototype.drawLine = function( point, ctx ) {
+  ctx.beginPath();
+  ctx.moveTo(this.x, this.y);
+  ctx.lineTo(point.x, point.y);
+  ctx.closePath();
+  ctx.stroke();
 }
 
 Tree.prototype.add = function(node, canvasState) {
@@ -64,14 +76,16 @@ Tree.prototype.findBFS = function(point) {
   return null;
 };
 
+
 Tree.prototype.traversePaintBFS = function(myState) {
   var queue = [this.root];
   while(queue.length) {
     var node = queue.shift();
     if (node == myState.selectedNode) node.point.fill="#ff0000";
     else node.point.fill="#aaaaaa";
+    if (node.parent != null) node.point.drawLine(node.parent.point, myState.ctx);
     node.point.draw(myState.ctx);
-    
+
     for(var i = 0; i < node.children.length; i++) {
       queue.push(node.children[i]);
     }
@@ -107,18 +121,20 @@ function CanvasState(canvas) {
 
 }
 
+
+
 CanvasState.prototype.click = function(e) {
 
 	var mouse = this.getMouse(e); //coordenades de món
 	//var mousex = e.pageX - this.canvas.offsetLeft;
 	//var mousey = e.pageY - this.canvas.offsetTop;
 	var node = new Node();
-	var point = new Point(mouse.x, mouse.y, 50);
+	var point = new Point(mouse.x, mouse.y, 10);
 	this.mouse = mouse;
 
 	if (this.selectedNode != null) {
-		var newCtx = multiply(this.selectedNode.translateMatrix, [mouse.x,mouse.y]);
-		console.log(newCtx);
+		//var newCtx = multiply(this.selectedNode.translateMatrix, [mouse.x,mouse.y]);
+		//console.log(newCtx);
 	}
 	
 
@@ -126,9 +142,9 @@ CanvasState.prototype.click = function(e) {
 	console.log(node.point);
 	console.log(this.selectMode);
 		
-	node.translateMatrix[4] = node.point.x;
-	node.translateMatrix[5] = node.point.y;
-	console.log(node.translateMatrix);
+	//node.translateMatrix[4] = node.point.x;
+	//node.translateMatrix[5] = node.point.y;
+	//console.log(node.translateMatrix);
 	
 	
 /*
@@ -146,7 +162,6 @@ CanvasState.prototype.click = function(e) {
   	this.draw();
 		/*
 		if (tree.root == null) {
-
 		}
 		*/
 	console.log(this.tree);
@@ -220,7 +235,7 @@ CanvasState.prototype.getMouse = function(e) {
 	return {x: mx, y: my};
 
 }
-
+/*
 function multiply(a, b) {
 	console.log(a);
 	console.log(b);
@@ -240,9 +255,9 @@ function multiply(a, b) {
       }
     }
   }
-  */
+  *//*
   return [first, second, third];
-}
+}*/
 
 // Draws the Canvas State
 CanvasState.prototype.draw = function() {
@@ -288,7 +303,6 @@ CanvasState.prototype.draw = function() {
     ctx.lineTo(mouse.x, mouse.y);
     ctx.closePath();
     ctx.stroke();
-
 */    
   requestAnimationFrame( function() { myState.draw() } );
 }
