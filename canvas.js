@@ -47,9 +47,9 @@ function Node() {
 	this.children = [];
 	this.name = "no name";
 	this.point = null;
-	this.translateMatrix = create();
-	this.rotateMatrix = create();
-	this.scaleMatrix = create();
+	//this.translateMatrix = create();
+	//this.rotateMatrix = create();
+	//this.scaleMatrix = create();
 	this.localMatrix = create();
 	this.globalMatrix = create();
 }
@@ -68,16 +68,21 @@ Point.prototype.contains = function( mx, my ) {
   	return distsq < rsq;
 }
 
+
+function renderMVC() {
+
+}
+
 // Draw point p in canvas myState
-function draw(p, ctx) {
-  ctx.fillStyle = p.fill;
-  ctx.beginPath();
-  ctx.arc(p.x, p.y, p.radius, 0, 2 * Math.PI);
-  ctx.fill();
+renderMVC.prototype.drawPoint = function(p, ctx) {
+  	ctx.fillStyle = p.fill;
+  	ctx.beginPath();
+  	ctx.arc(p.x, p.y, p.radius, 0, 2 * Math.PI);
+  	ctx.fill();
 }
 
 // Draw line from p1 to p2 in canvas myState
-function drawLine( p1, p2, ctx ) {
+renderMVC.prototype.drawLine = function( p1, p2, ctx ) {
 	ctx.beginPath();
 	ctx.moveTo(p1.x, p1.y);
 	ctx.lineTo(p2.x, p2.y);
@@ -86,32 +91,23 @@ function drawLine( p1, p2, ctx ) {
 }
 
 // Paint skeleton tree on canvas myState
-/*
-function paintSkeleton( tree, myState ) {
-	//tree.toPrint = [];
-	//tree.postorder(tree.root);
-	for( var i = 0; i < tree.toPrint.length; i++ ) {
-		if ( i != 0 )
-			drawLine( tree.toPrint[i].point, tree.toPrint[i-1].point, myState.ctx);
-		draw( tree.toPrint[i].point, myState.ctx);
-	}
+renderMVC.prototype.paintSkeleton = function( tree, myState ) {
+	var queue = [tree.root];
+  	while(queue.length) {
+    	var node = queue.shift();
+    	if (node == tree.selectedNode) node.point.fill="#ff0000";
+    	else node.point.fill="#aaaaaa";
+    	if (node.parent != null) this.drawLine(node.point, node.parent.point, myState.ctx);
+    	this.drawPoint( node.point, myState.ctx);
+
+    	for(var i = 0; i < node.children.length; i++) {
+      	queue.push(node.children[i]);
+    	}
+  	}
 }
-*/
 
-function paintSkeleton( tree, myState ) {
-  var queue = [tree.root];
-  while(queue.length) {
-    var node = queue.shift();
-    if (node == tree.selectedNode) node.point.fill="#ff0000";
-    else node.point.fill="#aaaaaa";
-    if (node.parent != null) drawLine(node.point, node.parent.point, myState.ctx);
-    draw( node.point, myState.ctx);
 
-    for(var i = 0; i < node.children.length; i++) {
-      queue.push(node.children[i]);
-    }
-  }
-};
+var render = new renderMVC();
 
 function CanvasState(canvas) {
 
@@ -120,69 +116,64 @@ function CanvasState(canvas) {
 	this.canvas = canvas;
 	this.ctx = canvas.getContext("2d");
 	this.drag = false;
+	this.mouse = null;
 	var tree = new Tree();
 
 	canvas.height = wrapper.offsetHeight;
 	canvas.width = wrapper.offsetWidth;
 
 	var myState = this;
-/*
+	var p = null;
+
 	canvas.addEventListener("mousedown", function(e) {
 		myState.drag = true;
-		myState.selectMode( tree, e );
+		myState.mouse = myState.getMouse(e);
+		if (tree.root != null)
+			p = tree.findBFS(myState.mouse);
+		if ( p != null ) 
+			tree.selectedNode = p;
 	});
 
 	canvas.addEventListener("mouseup", function(e) {
+		myState.selectMode( tree, e );
 		myState.drag = false;
+		tree.postorder(tree.root)
 	});
+
+	var mouse = null;
+	var node = null;
 
 	canvas.addEventListener("mousemove", function(e) {
 	    if (myState.drag) {
-	    	movePoint( tree, e, myState );
+	    	mouse = myState.getMouse(e);
+	    	movePoint( tree.selectedNode, mouse );
 	    }
-	});
-	*/
-	canvas.addEventListener("click", function(e) {
-		myState.selectMode( tree, e );
 	});
 
 	if (tree.root != null)
 		requestAnimationFrame( function() { myState.draw( tree ) } );
 
 }
-/*
-function movePoint( tree, e, myState ) {
-	var mouse = myState.getMouse(e);
-	var node = tree.findBFS(mouse);
+
+function movePoint( node, mouse ) {
 	if(node != null) {
 	    node.point.x = mouse.x;
 	    node.point.y = mouse.y;
-	    console.log(node.point);
-	    //fromTranslation(node.translateMatrix, myState.distanceUpdate(node));
-	    //myState.calculateLocal(node);
-		//invert(node.localToGlobal, node.localMatrix);
-
-	    //node.updateMatrix(myState);
 	}
 }
-*/
+
 CanvasState.prototype.selectMode = function( tree, e ) {
+	
 	var myState = this;
 	var mouse = myState.getMouse(e); 
 	var p = null;
-	if (tree.root != null)
-		p = tree.findBFS(mouse);
-	if ( p != null ) {
-		tree.selectedNode = p;
-		
-		if ( myState.drag )
-			console.log("move node");
-		//myState.move( tree, mouse );
-			
-	} else {
-		
-		myState.click( tree, mouse );
-	}
+	if ( myState.mouse.x == mouse.x && myState.mouse.y == mouse.y ) {
+		if (tree.root != null)
+			p = tree.findBFS(mouse);
+		if ( p == null ) 
+			myState.click( tree, mouse );
+	} 
+
 }
 
 CanvasState.prototype.click = function( tree, mouse ) {
@@ -190,7 +181,6 @@ CanvasState.prototype.click = function( tree, mouse ) {
 	var point = new Point(mouse.x, mouse.y, 10);
 
 	node.point = point;
-	//console.log(node.point);	
 
   	if (tree.root == null) {
   		tree.root = node;
@@ -198,9 +188,8 @@ CanvasState.prototype.click = function( tree, mouse ) {
   	} else {
   		tree.add(node, this);
   	}
+
   	this.draw( tree );
-	
-	console.log(tree);
 }
 
 
@@ -270,7 +259,7 @@ CanvasState.prototype.draw = function( tree ) {
   	myState.ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   	if(tree.root != null){
-  		paintSkeleton( tree, myState );
+  		render.paintSkeleton( tree, myState );
   	}
   
    
