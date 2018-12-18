@@ -227,6 +227,7 @@ Node.prototype.updateLocal = function( tree ) {
 	var node = this;
 	var translateMatrix = create();
 	var rotateMatrix = create();
+	var g = node.globalMatrix;
 	var p2 = {x: 0, y: 0};
 	if ( tree.root != null ) {
 		p2.x = tree.selectedNode.parent.point.x;
@@ -235,10 +236,26 @@ Node.prototype.updateLocal = function( tree ) {
 	node.translation( translateMatrix, tree, p2 );
 	node.rotation( rotateMatrix, tree, p2 );
 	multiply( node.localMatrix, translateMatrix, rotateMatrix );
-	console.log(node.localMatrix);
+	node.getGlobal( node.globalMatrix );
+
+	node.point.update( node.point, g, node.localMatrix );
+	console.log(node.point);
 
 }
 
+Point.prototype.update = function( p, g, l ) {
+	var inv = create();
+	var p1 = [];
+
+	invert( inv, g );
+	transformMat3(p1, [p.x, p.y, 0], inv);
+	transformMat3(p1, p1, l);
+
+
+	var p = {x: p1[0], y: p1[1]};
+
+	return p;
+}
 
 Node.prototype.getGlobal = function( g ) {
 	var node = this;
