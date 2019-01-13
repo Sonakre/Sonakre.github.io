@@ -52,18 +52,13 @@ Node.prototype.getGlobal = function( b ) {
 	} else {
 		multiply( node.globalMatrix, node.parent.globalMatrix, node.localMatrix);
 	}
-
-	
 }
 
 Node.prototype.getLocal = function( b ) {
 	var translateMatrix = this.translate( b );
 	var rotateMatrix = this.rotate( b );
 
-	//transpose( this.localMatrix, multiply( this.localMatrix, translateMatrix, rotateMatrix ) );
 	multiply( this.localMatrix, rotateMatrix, translateMatrix );
-
-
 }
 
 Node.prototype.updatePoint = function( b ) {
@@ -72,25 +67,9 @@ Node.prototype.updatePoint = function( b ) {
 		n.point.x = n.localMatrix[6];
 		n.point.y = n.localMatrix[7];
 	} else {
-		var px = n.localMatrix[6];
-		var py = n.localMatrix[7];
-		//console.log(p);
-		console.log(n.localMatrix);
-		//var px = n.localMatrix[0] * p.x + n.localMatrix[3] * p.y + n.localMatrix[6];
-		//var py = n.localMatrix[1] * p.x + n.localMatrix[4] * p.y + n.localMatrix[7];
-		//var m = create();
-		//invert( m, n.localMatrix );
-		//n.point.x = m[0] * p.x + m[3] * p.y + m[6];
-		//n.point.y = m[1] * p.x + m[4] * p.y + m[7];
-		
-		//n.point.x = n.globalMatrix[0] * px + n.globalMatrix[3] * py + n.globalMatrix[6];
-		//n.point.y = n.globalMatrix[1] * px + n.globalMatrix[4] * py + n.globalMatrix[7];
-		//n.point.x = n.parent.point.x + n.localMatrix[6];
-		//n.point.y = n.parent.point.y + n.localMatrix[7];
 		n.point.x = n.globalMatrix[6];
 		n.point.y = n.globalMatrix[7];
 	}
-
 }
 
 Node.prototype.translate = function( b ) {
@@ -178,7 +157,6 @@ function CanvasState( canvas ) {
 		if ( myState.drag ) {
 			myState.movePoint( e, tree );
 		}
-		//console.log(myState.mouse);
 	});
 
 	canvas.addEventListener( "mousedown", function( e ) {
@@ -190,7 +168,7 @@ function CanvasState( canvas ) {
 	canvas.addEventListener( "mouseup", function( e ) {
 		var mouse = myState.getMouse( e );
 
-		myState.mouseup( /*selectedNode,*/ mouse, tree );
+		myState.mouseup( mouse, tree );
 		myState.drag = false;
 	});
 
@@ -254,7 +232,7 @@ CanvasState.prototype.mousedown = function( mouse, tree ) {
 	}
 }
 
-CanvasState.prototype.mouseup = function( /*selectedNode,*/ mouse, tree  ) {
+CanvasState.prototype.mouseup = function( mouse, tree  ) {
 	var myState = this;
 
 	//console.log(mouse);
@@ -281,8 +259,6 @@ CanvasState.prototype.mouseup = function( /*selectedNode,*/ mouse, tree  ) {
 CanvasState.prototype.createNode = function( /*selectedNode,*/ mouse, tree ) {
 	var node = new Node();
 
-	
-
 	node.point = new Point( mouse );
 	var selectedNode = null;
 
@@ -290,15 +266,6 @@ CanvasState.prototype.createNode = function( /*selectedNode,*/ mouse, tree ) {
 		selectedNode = tree.findSelected();
 
 	node.addChild( selectedNode, tree );
-/*
-	if ( selectedNode == null ) {
-		tree.root = node;
-	} else {
-		selectedNode.addChild( node, tree );
-	}
-*/
-	//
-
 
 }
 
