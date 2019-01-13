@@ -67,9 +67,14 @@ Node.prototype.updatePoint = function( b ) {
 		n.point.x = n.localMatrix[6];
 		n.point.y = n.localMatrix[7];
 	} else {
-		n.point.x = n.globalMatrix[6];
-		n.point.y = n.globalMatrix[7];
+		
+		var p = [];
+		transformMat3(p, [0,0], n.globalMatrix);
+		n.point.x = p[0];
+		n.point.y = p[1];
+		
 	}
+
 }
 
 Node.prototype.translate = function( b ) {
