@@ -26,91 +26,30 @@ function Node() {
 	this.globalMatrix = create();
 }
 
-Node.prototype.addChild = function( node, tree ) {
-	var n = this;
-	if ( node == null ) {
-		n.getLocal( false );
-		//n.globalMatrix = n.localMatrix;
-		n.getGlobal( false );
-		n.updatePoint( false );
-		tree.root = n;
-	} else {
-		node.selected = false;
-		node.children.push( n );
-		n.parent = node;
-		
-		n.getLocal( true );
-		n.getGlobal( true );
-		n.updatePoint( true );
-	}
+Node.prototype.updateSubtree = function() {
+	var queue = [this];
+  	while(queue.length) {
+    	var node = queue.shift();
+    	//node.getLocal();
+    	node.getGlobal();
+		node.updatePoint();
+    	for(var i = 0; i < node.children.length; i++) {
+      		queue.push(node.children[i]);
+    	}
+  	}
 }
 
-Node.prototype.getGlobal = function( b ) {
-	var node = this;
-	if ( !b ) {
-		node.globalMatrix = node.localMatrix;
-	} else {
-		multiply( node.globalMatrix, node.parent.globalMatrix, node.localMatrix);
-	}
-}
-
-Node.prototype.getLocal = function( b ) {
-	var translateMatrix = this.translate( b );
-	var rotateMatrix = this.rotate( b );
-
-	multiply( this.localMatrix, rotateMatrix, translateMatrix );
-}
-
-Node.prototype.updatePoint = function( b ) {
-	var n = this;
-	if ( !b ) {
-		n.point.x = n.localMatrix[6];
-		n.point.y = n.localMatrix[7];
-	} else {
-		
-		var p = [];
-		transformMat3(p, [0,0], n.globalMatrix);
-		n.point.x = p[0];
-		n.point.y = p[1];
-		
-	}
-
-}
-
-Node.prototype.translate = function( b ) {
-	var point = this.point;
-	if ( !b ) {
-		var parent = {x: 0, y: 0};
-	} else {
-		var parent = this.parent.point;	
-	}
-
-	var dist = (point.x - parent.x) * (point.x - parent.x) + (point.y - parent.y) * (point.y - parent.y);
-	var translateMatrix = create();
-
-	fromTranslation(translateMatrix, [Math.sqrt(dist), 0]);
-
-
-	return translateMatrix;
-}
-
-Node.prototype.rotate = function( b ) {
-	var point = this.point;
-	if ( !b ) {
-		var parent = {x: 0, y: 0};
-	} else {
-		var parent = this.parent.point;	
-	}
-
-	var dx = point.x - parent.x;
-	var dy = point.y - parent.y;
-	var rot = Math.atan2(dy, dx);
-
-	var rotateMatrix = create();
-
-	fromRotation( rotateMatrix, rot );
-
-	return rotateMatrix;
+Node.prototype.updateSubtreeLocal = function() {
+	var queue = [this];
+  	while(queue.length) {
+    	var node = queue.shift();
+    	node.getLocal();
+    	node.getGlobal();
+		node.updatePoint();
+    	for(var i = 0; i < node.children.length; i++) {
+      		queue.push(node.children[i]);
+    	}
+  	}
 }
 
 function Point( p ) {
@@ -170,9 +109,15 @@ function CanvasState( canvas ) {
 
 	});
 
+	//var count = 0;
 	canvas.addEventListener( "mouseup", function( e ) {
 		var mouse = myState.getMouse( e );
-
+		/*
+		count++;
+		if ( count == 1 ) 
+			myState.mouseup( {x:20, y:30}, tree );
+		else myState.mouseup( {x:70, y:80}, tree );
+		*/
 		myState.mouseup( mouse, tree );
 		myState.drag = false;
 	});
@@ -201,28 +146,191 @@ CanvasState.prototype.movePoint = function( e, tree ) {
 
 Node.prototype.update = function( mouse ) {
 	var n = this;
+	//var p = n.getLocalCoord( mouse );
+	
 	n.point.x = mouse.x;
 	n.point.y = mouse.y;
-	if ( n.parent == null ) {
-		n.getLocal( false );
-		n.getGlobal( false );
-		n.updatePoint( false );
-		/*
-		if ( n.children.length != 0 ) {
-			for ( var i = 0; i < n.children.length; i++ ) {
-				n.children[i].getLocal( false );
-				n.children[i].getGlobal( n.children[i].globalMatrix );
-				n.children[i].updatePoint( false );
-			}
+	//n.point.x = mouse.x;
+	//n.point.y = mouse.y;
+	//n.getUpdatedLocal();
+	n.globalMatrix[6] = mouse.x;
+	n.globalMatrix[7] = mouse.y;
+
+	//n.getLocal();
+	//n.getGlobal();
+	//n.updatePoint();
+	//n.updateSubtree();
+	
+	for ( var i = 0; i < n.children.length; i++ ) {
+		n.children[i].updateSubtree();
+		
+	
+	}
+}
+
+Node.prototype.getLocalCoord = function( mouse ) {
+	var inv = create();
+	invert( inv, n.globalMatrix );
+
+	var p = [];
+	transformMat3(p, [mouse.x,mouse.y], inv);
+
+	return p;
+}
+CanvasState.prototype.mouseup = function( mouse, tree ) {
+	var myState = this;
+	var m = new Point( mouse );
+	//myState.createNode( m, tree );
+	if ( mouse.x == myState.mouse.x && mouse.y == myState.mouse.y ) {
+		console.log( mouse );
+		var node = null;
+		if ( tree.root != null ) {
+			var m = new Point( mouse );
+			node = m.findBFS( tree );
+			
 		}
-		*/
+		if ( node == null ) {
+			myState.createNode(  mouse, tree );
+			//console.log(selectedNode);
+		} else {
+			tree.findSelected().selected = false;
+			node.selected = true;
+		}
 	} else {
-		n.getLocal( true );
-		n.getGlobal( true );
-		n.updatePoint( true );
+		var node = tree.findSelected();
+		console.log(tree);	
+		node.getLocal();
+		node.updateSubtreeLocal();
+		//node.getGlobal();
+		//node.updatePoint();
+	}
+	
+	
+	
+}
+
+CanvasState.prototype.createNode = function( mouse, tree ) {
+	var node = new Node();
+
+	node.point = new Point( mouse );
+	var selectedNode = null;
+
+	if ( tree.root != null ) {
+		selectedNode = tree.findSelected();
+		selectedNode.addChild( node, tree );	
+	} else {
+		node.getLocal();
+		node.getGlobal();
+		node.updatePoint();
+		tree.root = node;
+	}
+}
+
+
+Node.prototype.addChild = function( node, tree ) {
+	var n = this;
+	
+	n.selected = false;
+	n.children.push( node );
+	node.parent = n;
+		
+	node.getLocal();
+	node.getGlobal();
+	node.updatePoint();
+}
+
+
+Node.prototype.getLocal = function() {
+	//console.log(this.parent.;
+	var translateMatrix = this.translate();
+	var rotateMatrix = this.rotate();
+
+	//this.localMatrix = [rotateMatrix[0], rotateMatrix[1], rotateMatrix[2], rotateMatrix[3], rotateMatrix[4], rotateMatrix[5], translateMatrix[6], translateMatrix[7], translateMatrix[8]];
+	multiply( this.localMatrix, rotateMatrix, translateMatrix );	
+}
+
+Node.prototype.getGlobal = function() {
+	var node = this;
+	if ( node.parent == null ) {
+		node.globalMatrix = node.localMatrix;
+	} else {
+
+		multiply( node.globalMatrix, node.parent.globalMatrix, node.localMatrix );
+
+	}
+}
+
+Node.prototype.updatePoint = function() {
+	var n = this;
+	if ( n.parent == null ) {
+		n.point.x = n.localMatrix[6];
+		n.point.y = n.localMatrix[7];
+	} else {
+		console.log(Math.acos(n.globalMatrix[0]) * 180/Math.PI);
+		var p = [];
+		transformMat3(p, [0,0], n.globalMatrix);
+		n.point.x = p[0];
+		n.point.y = p[1];
 	}
 
 }
+
+Node.prototype.updateChildNode = function() {
+	
+}
+
+Node.prototype.translate = function() {
+	var node = this;
+	var point = this.point;
+	
+	if ( node.parent != null ){
+		var px = node.parent.point.x;
+		var py = node.parent.point.y;
+	} else {
+		var px = 0;
+		var py = 0;
+	}
+
+	var dist = (point.x - px) * (point.x - px) + (point.y - py) * (point.y - py);
+	var translateMatrix = create();
+
+	fromTranslation(translateMatrix, [Math.sqrt(dist),0]);
+
+	return translateMatrix;
+}
+
+Node.prototype.rotate = function() {
+	var node = this;
+	var point = node.point;
+	
+	if ( node.parent != null ){
+		var px = node.parent.point.x;
+		var py = node.parent.point.y;
+	} else {
+		var px = 0;
+		var py = 0;
+	}
+	var dx = point.x - px;
+	var dy = point.y - py;
+	var rot = Math.atan2(dy, dx);
+	var newRot = rot < 0 ? Math.PI + rot : 0;
+	var rotateMatrix = create();
+
+	if ( node.parent != null ) {
+		if ( node.parent.globalMatrix[1] < 0 && node.parent.globalMatrix[0] > 0 ) var rotParent = Math.asin( node.parent.globalMatrix[1] );
+		else if ( node.parent.globalMatrix[1] < 0 && node.parent.globalMatrix[0] < 0 ) var rotParent = - Math.acos( node.parent.globalMatrix[0] );
+		else var rotParent = Math.acos( node.parent.globalMatrix[0] );
+		var sign = rot > rotParent ? 1 : -1;
+		rot = rot - rotParent;
+		//var K = -sign * Math.PI * 2;
+    	//var rot = (Math.abs(K + rot) < Math.abs(rot))? K + rot : rot;
+	}
+
+	fromRotation( rotateMatrix, rot );
+
+	return rotateMatrix;
+}
+
 
 CanvasState.prototype.mousedown = function( mouse, tree ) {
 	var myState = this;
@@ -237,42 +345,10 @@ CanvasState.prototype.mousedown = function( mouse, tree ) {
 	}
 }
 
-CanvasState.prototype.mouseup = function( mouse, tree  ) {
-	var myState = this;
 
-	//console.log(mouse);
-	//console.log(myState.mouse);
-	if ( mouse.x == myState.mouse.x && mouse.y == myState.mouse.y ) {
-		console.log( mouse );
-		var node = null;
-		if ( tree.root != null ) {
-			var m = new Point( mouse );
-			node = m.findBFS( tree );
-			//console.log(p);
-		}
-		if ( node == null ) {
-			myState.createNode( /*selectedNode,*/ mouse, tree );
-			//console.log(selectedNode);
-		} else {
-			tree.findSelected().selected = false;
-			node.selected = true;
-		}
-	}
-	console.log(tree);
-}
 
-CanvasState.prototype.createNode = function( /*selectedNode,*/ mouse, tree ) {
-	var node = new Node();
 
-	node.point = new Point( mouse );
-	var selectedNode = null;
 
-	if ( tree.root != null )
-		selectedNode = tree.findSelected();
-
-	node.addChild( selectedNode, tree );
-
-}
 
 CanvasState.prototype.getMouse = function( e ) {
 	var element = this.canvas, offsetX = 0, offsetY = 0, mx, my;
@@ -292,11 +368,10 @@ CanvasState.prototype.getMouse = function( e ) {
 
 }
 
-
 // View
 CanvasState.prototype.render = function( tree ) {
 	var myState = this;
-  
+
   	myState.ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   	if(tree.root != null){
@@ -361,13 +436,24 @@ CanvasState.prototype.paintSkeleton = function( tree, myState ) {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //
 function init() {
 	var canvas = new CanvasState(document.getElementById("canvas"));
 }
-
-
-
-
-
 
