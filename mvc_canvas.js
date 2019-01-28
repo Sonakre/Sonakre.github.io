@@ -26,11 +26,123 @@ function Node() {
 	this.globalMatrix = create();
 }
 
+Node.prototype.translate = function() {
+	var node = this;
+	var point = this.point;
+	
+	if ( node.parent != null ){
+		var px = node.parent.point.x;
+		var py = node.parent.point.y;
+	} else {
+		var px = 0;
+		var py = 0;
+	}
+
+	var dist = (point.x - px) * (point.x - px) + (point.y - py) * (point.y - py);
+	var translateMatrix = create();
+
+	fromTranslation(translateMatrix, [Math.sqrt(dist),0]);
+
+	return translateMatrix;
+}
+
+Node.prototype.rotate = function() {
+	var node = this;
+	var point = node.point;
+	
+	if ( node.parent != null ){
+		var px = node.parent.point.x;
+		var py = node.parent.point.y;
+	} else {
+		var px = 0;
+		var py = 0;
+	}
+	var dx = point.x - px;
+	var dy = point.y - py;
+	var rot = Math.atan2(dy, dx);
+	var newRot = rot < 0 ? Math.PI + rot : 0;
+	var rotateMatrix = create();
+
+	if ( node.parent != null ) {
+		if ( node.parent.globalMatrix[1] < 0 && node.parent.globalMatrix[0] > 0 ) var rotParent = Math.asin( node.parent.globalMatrix[1] );
+		else if ( node.parent.globalMatrix[1] < 0 && node.parent.globalMatrix[0] < 0 ) var rotParent = - Math.acos( node.parent.globalMatrix[0] );
+		else var rotParent = Math.acos( node.parent.globalMatrix[0] );
+		var sign = rot > rotParent ? 1 : -1;
+		rot = rot - rotParent;
+		//var K = -sign * Math.PI * 2;
+    	//var rot = (Math.abs(K + rot) < Math.abs(rot))? K + rot : rot;
+	}
+
+	fromRotation( rotateMatrix, rot );
+
+	return rotateMatrix;
+}
+
+Node.prototype.getLocal = function() {
+	//console.log(this.parent.;
+	var translateMatrix = this.translate();
+	var rotateMatrix = this.rotate();
+
+	//this.localMatrix = [rotateMatrix[0], rotateMatrix[1], rotateMatrix[2], rotateMatrix[3], rotateMatrix[4], rotateMatrix[5], translateMatrix[6], translateMatrix[7], translateMatrix[8]];
+	multiply( this.localMatrix, rotateMatrix, translateMatrix );	
+}
+
+Node.prototype.getGlobal = function() {
+	var node = this;
+	if ( node.parent == null ) {
+		node.globalMatrix = node.localMatrix;
+	} else {
+
+		multiply( node.globalMatrix, node.parent.globalMatrix, node.localMatrix );
+
+	}
+}
+
+Node.prototype.updatePoint = function() {
+	var n = this;
+	if ( n.parent == null ) {
+		n.point.x = n.localMatrix[6];
+		n.point.y = n.localMatrix[7];
+	} else {
+		console.log(Math.acos(n.globalMatrix[0]) * 180/Math.PI);
+		var p = [];
+		transformMat3(p, [0,0], n.globalMatrix);
+		n.point.x = p[0];
+		n.point.y = p[1];
+	}
+
+}
+
+Node.prototype.addChild = function( node, tree ) {
+	var n = this;
+	
+	n.selected = false;
+	n.children.push( node );
+	node.parent = n;
+		
+	node.getLocal();
+	node.getGlobal();
+	node.updatePoint();
+}
+
+Node.prototype.update = function( mouse ) {
+	var n = this;
+	
+	n.point.x = mouse.x;
+	n.point.y = mouse.y;
+	
+	n.globalMatrix[6] = mouse.x;
+	n.globalMatrix[7] = mouse.y;
+	
+	for ( var i = 0; i < n.children.length; i++ ) {
+		n.children[i].updateSubtree();
+	}
+}
+
 Node.prototype.updateSubtree = function() {
 	var queue = [this];
   	while(queue.length) {
     	var node = queue.shift();
-    	//node.getLocal();
     	node.getGlobal();
 		node.updatePoint();
     	for(var i = 0; i < node.children.length; i++) {
@@ -109,15 +221,8 @@ function CanvasState( canvas ) {
 
 	});
 
-	//var count = 0;
 	canvas.addEventListener( "mouseup", function( e ) {
 		var mouse = myState.getMouse( e );
-		/*
-		count++;
-		if ( count == 1 ) 
-			myState.mouseup( {x:20, y:30}, tree );
-		else myState.mouseup( {x:70, y:80}, tree );
-		*/
 		myState.mouseup( mouse, tree );
 		myState.drag = false;
 	});
@@ -131,52 +236,9 @@ CanvasState.prototype.movePoint = function( e, tree ) {
 	var n = tree.findSelected();
 
 	n.update( mouse );
-	
-	//n.getLocal();
-	//n.getGlobal();
-
-	//n.updatePoint();
-
-	//n.point.x = mouse.x;
-	//n.point.y = mouse.y;
-
-	
 	console.log(n);
 }
 
-Node.prototype.update = function( mouse ) {
-	var n = this;
-	//var p = n.getLocalCoord( mouse );
-	
-	n.point.x = mouse.x;
-	n.point.y = mouse.y;
-	//n.point.x = mouse.x;
-	//n.point.y = mouse.y;
-	//n.getUpdatedLocal();
-	n.globalMatrix[6] = mouse.x;
-	n.globalMatrix[7] = mouse.y;
-
-	//n.getLocal();
-	//n.getGlobal();
-	//n.updatePoint();
-	//n.updateSubtree();
-	
-	for ( var i = 0; i < n.children.length; i++ ) {
-		n.children[i].updateSubtree();
-		
-	
-	}
-}
-
-Node.prototype.getLocalCoord = function( mouse ) {
-	var inv = create();
-	invert( inv, n.globalMatrix );
-
-	var p = [];
-	transformMat3(p, [mouse.x,mouse.y], inv);
-
-	return p;
-}
 CanvasState.prototype.mouseup = function( mouse, tree ) {
 	var myState = this;
 	var m = new Point( mouse );
@@ -204,131 +266,6 @@ CanvasState.prototype.mouseup = function( mouse, tree ) {
 		//node.getGlobal();
 		//node.updatePoint();
 	}
-	
-	
-	
-}
-
-CanvasState.prototype.createNode = function( mouse, tree ) {
-	var node = new Node();
-
-	node.point = new Point( mouse );
-	var selectedNode = null;
-
-	if ( tree.root != null ) {
-		selectedNode = tree.findSelected();
-		selectedNode.addChild( node, tree );	
-	} else {
-		node.getLocal();
-		node.getGlobal();
-		node.updatePoint();
-		tree.root = node;
-	}
-}
-
-
-Node.prototype.addChild = function( node, tree ) {
-	var n = this;
-	
-	n.selected = false;
-	n.children.push( node );
-	node.parent = n;
-		
-	node.getLocal();
-	node.getGlobal();
-	node.updatePoint();
-}
-
-
-Node.prototype.getLocal = function() {
-	//console.log(this.parent.;
-	var translateMatrix = this.translate();
-	var rotateMatrix = this.rotate();
-
-	//this.localMatrix = [rotateMatrix[0], rotateMatrix[1], rotateMatrix[2], rotateMatrix[3], rotateMatrix[4], rotateMatrix[5], translateMatrix[6], translateMatrix[7], translateMatrix[8]];
-	multiply( this.localMatrix, rotateMatrix, translateMatrix );	
-}
-
-Node.prototype.getGlobal = function() {
-	var node = this;
-	if ( node.parent == null ) {
-		node.globalMatrix = node.localMatrix;
-	} else {
-
-		multiply( node.globalMatrix, node.parent.globalMatrix, node.localMatrix );
-
-	}
-}
-
-Node.prototype.updatePoint = function() {
-	var n = this;
-	if ( n.parent == null ) {
-		n.point.x = n.localMatrix[6];
-		n.point.y = n.localMatrix[7];
-	} else {
-		console.log(Math.acos(n.globalMatrix[0]) * 180/Math.PI);
-		var p = [];
-		transformMat3(p, [0,0], n.globalMatrix);
-		n.point.x = p[0];
-		n.point.y = p[1];
-	}
-
-}
-
-Node.prototype.updateChildNode = function() {
-	
-}
-
-Node.prototype.translate = function() {
-	var node = this;
-	var point = this.point;
-	
-	if ( node.parent != null ){
-		var px = node.parent.point.x;
-		var py = node.parent.point.y;
-	} else {
-		var px = 0;
-		var py = 0;
-	}
-
-	var dist = (point.x - px) * (point.x - px) + (point.y - py) * (point.y - py);
-	var translateMatrix = create();
-
-	fromTranslation(translateMatrix, [Math.sqrt(dist),0]);
-
-	return translateMatrix;
-}
-
-Node.prototype.rotate = function() {
-	var node = this;
-	var point = node.point;
-	
-	if ( node.parent != null ){
-		var px = node.parent.point.x;
-		var py = node.parent.point.y;
-	} else {
-		var px = 0;
-		var py = 0;
-	}
-	var dx = point.x - px;
-	var dy = point.y - py;
-	var rot = Math.atan2(dy, dx);
-	var newRot = rot < 0 ? Math.PI + rot : 0;
-	var rotateMatrix = create();
-
-	if ( node.parent != null ) {
-		if ( node.parent.globalMatrix[1] < 0 && node.parent.globalMatrix[0] > 0 ) var rotParent = Math.asin( node.parent.globalMatrix[1] );
-		else if ( node.parent.globalMatrix[1] < 0 && node.parent.globalMatrix[0] < 0 ) var rotParent = - Math.acos( node.parent.globalMatrix[0] );
-		else var rotParent = Math.acos( node.parent.globalMatrix[0] );
-		var sign = rot > rotParent ? 1 : -1;
-		rot = rot - rotParent;
-		//var K = -sign * Math.PI * 2;
-    	//var rot = (Math.abs(K + rot) < Math.abs(rot))? K + rot : rot;
-	}
-
-	fromRotation( rotateMatrix, rot );
-
-	return rotateMatrix;
 }
 
 
@@ -347,6 +284,27 @@ CanvasState.prototype.mousedown = function( mouse, tree ) {
 
 
 
+CanvasState.prototype.createNode = function( mouse, tree ) {
+	var node = new Node();
+
+	node.point = new Point( mouse );
+	var selectedNode = null;
+
+	node.image = new Image();
+	node.image.src = 'images/hand.png';
+	
+	if ( tree.root != null ) {
+		selectedNode = tree.findSelected();
+		selectedNode.addChild( node, tree );	
+	} else {
+		node.getLocal();
+		node.getGlobal();
+		node.updatePoint();
+		tree.root = node;
+	}
+
+
+}
 
 
 
@@ -382,7 +340,7 @@ CanvasState.prototype.render = function( tree ) {
   	requestAnimationFrame( function() { myState.render( tree ) } );
 }
 
-CanvasState.prototype.drawPoint = function(p, ctx) {
+CanvasState.prototype.drawPoint = function( p, ctx ) {
   	ctx.fillStyle = p.fill;
   	ctx.beginPath();
   	ctx.arc(p.x, p.y, 10, 0, 2 * Math.PI);
@@ -398,6 +356,25 @@ CanvasState.prototype.drawLine = function( p1, p2, ctx ) {
 	ctx.stroke();
 }
 
+CanvasState.prototype.drawBody = function( node, ctx ) {
+	ctx.save();
+	if ( node.parent == null ) 
+		return;
+	
+	var dx = node.point.x - node.parent.point.x;
+	var dy = node.point.y - node.parent.point.y;
+	var distance = Math.hypot( node.point.x - node.parent.point.x, node.point.y - node.parent.point.y );
+	var rotation = Math.atan2(dy, dx);
+	var angleDegrees = rotation * (180/Math.PI);
+	var radians = (angleDegrees - 90) * (Math.PI/180);
+   	
+	ctx.translate( node.parent.point.x, node.parent.point.y );
+	ctx.rotate(radians);
+  
+	ctx.drawImage( node.image, -50, 0, 100, distance );
+	ctx.restore();
+}
+
 // Paint skeleton tree on canvas myState
 CanvasState.prototype.paintSkeleton = function( tree, myState ) {
 	var queue = [tree.root];
@@ -407,6 +384,7 @@ CanvasState.prototype.paintSkeleton = function( tree, myState ) {
     	else node.point.fill="#aaaaaa";
     	if (node.parent != null) this.drawLine(node.point, node.parent.point, myState.ctx);
     	this.drawPoint( node.point, myState.ctx );
+    	this.drawBody( node, myState.ctx );
 
     	for(var i = 0; i < node.children.length; i++) {
       		queue.push(node.children[i]);
