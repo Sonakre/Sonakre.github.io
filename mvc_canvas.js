@@ -195,18 +195,13 @@ Point.prototype.findBFS = function( tree ) {
 
 
 // Controller
-function CanvasState( canvas ) {
-	var wrapper = document.getElementById("canvasWrapper");
-	canvas.height = wrapper.offsetHeight;
-	canvas.width = wrapper.offsetWidth;
-	
+function CanvasState( canvas, tree ) {
 	this.canvas = canvas;
 	this.ctx = canvas.getContext("2d");
 	this.mouse = null;
 	this.drag = false;
 	
 	var myState = this;
-	var tree = new Tree();
 	//var selectedNode = new Node();
 
 	canvas.addEventListener( "mousemove", function( e ) {
@@ -236,7 +231,7 @@ CanvasState.prototype.movePoint = function( e, tree ) {
 	var n = tree.findSelected();
 
 	n.update( mouse );
-	console.log(n);
+	//console.log(n);
 }
 
 CanvasState.prototype.mouseup = function( mouse, tree ) {
@@ -289,9 +284,6 @@ CanvasState.prototype.createNode = function( mouse, tree ) {
 
 	node.point = new Point( mouse );
 	var selectedNode = null;
-
-	node.image = new Image();
-	node.image.src = 'images/hand.png';
 	
 	if ( tree.root != null ) {
 		selectedNode = tree.findSelected();
@@ -305,8 +297,6 @@ CanvasState.prototype.createNode = function( mouse, tree ) {
 
 
 }
-
-
 
 CanvasState.prototype.getMouse = function( e ) {
 	var element = this.canvas, offsetX = 0, offsetY = 0, mx, my;
@@ -357,6 +347,7 @@ CanvasState.prototype.drawLine = function( p1, p2, ctx ) {
 }
 
 CanvasState.prototype.drawBody = function( node, ctx ) {
+	if ( !node.image ) return;
 	ctx.save();
 	if ( node.parent == null ) 
 		return;
@@ -371,7 +362,7 @@ CanvasState.prototype.drawBody = function( node, ctx ) {
 	ctx.translate( node.parent.point.x, node.parent.point.y );
 	ctx.rotate(radians);
   
-	ctx.drawImage( node.image, -50, 0, 100, distance );
+	ctx.drawImage( node.image, -node.image.width/2, 0, node.image.width, node.image.height );
 	ctx.restore();
 }
 
@@ -418,12 +409,66 @@ CanvasState.prototype.paintSkeleton = function( tree, myState ) {
 
 
 
+function closeTab( tab, hover ) {
+	if ( !hover ) return;
+	
+	tab.style.display = "none";
+	
+
+}
 
 
+function loadImages( myState, tree, imagesWrapper, genContainer ) {
+	var arm = document.getElementById("first-image");
+	var foreArm = document.getElementById("second-image");
+	var hand = document.getElementById("third-image");
+	
+	arm.addEventListener("click", function( e ){
+		if ( tree == null ) {
+			imagesWrapper.style.display = "none";
+			return;
+		}
+		var selectedNode = tree.findSelected();
+		selectedNode.image = new Image();
+		selectedNode.image.src = 'images/arm.png';
+		selectedNode.image.width = "50";
+		selectedNode.image.height = "100";
+		imagesWrapper.style.display = "none";
+		genContainer.style.backgroundColor = "#ffffff";
+	});
+	foreArm.addEventListener("click", function( e ){
+		if ( tree == null ) {
+			imagesWrapper.style.display = "none";
+			return;
+		}
+		var selectedNode = tree.findSelected();
+		selectedNode.image = new Image();
+		selectedNode.image.src = 'images/fore-arm.png';
+		selectedNode.image.width = "50";
+		selectedNode.image.height = "100";
+		imagesWrapper.style.display = "none";
+		genContainer.style.backgroundColor = "#ffffff";
+	});
+	hand.addEventListener("click", function( e ){
+		if ( tree == null ) {
+			imagesWrapper.style.display = "none";
+			return;
+		}
+		var selectedNode = tree.findSelected();
+		selectedNode.image = new Image();
+		selectedNode.image.src = 'images/hand.png';
+		selectedNode.image.width = "50";
+		selectedNode.image.height = "50";
+		imagesWrapper.style.display = "none";
+		genContainer.style.backgroundColor = "#ffffff";
+	});
+}
 
+function createTree() {
+	var tree = new Tree();
 
-
-
+	return tree;
+}
 
 
 
@@ -432,6 +477,68 @@ CanvasState.prototype.paintSkeleton = function( tree, myState ) {
 
 //
 function init() {
-	var canvas = new CanvasState(document.getElementById("canvas"));
+	var option_newTree = document.getElementById("new-tree");
+	var wrapper = document.getElementById("canvasWrapper");
+	var canvas = document.getElementById("canvas");
+	var canvasState = null;
+	canvas.height = wrapper.offsetHeight;
+	canvas.width = wrapper.offsetWidth;
+	var wrapper = document.getElementById("wrapper");
+	var option = document.getElementById("first");
+	var imagesWrapper = document.getElementById("imagesWrapper");
+	var back = document.getElementById("back");
+	var genContainer = document.getElementById("generalContainer");
+	var newSkeleton = document.getElementById("new-skeleton");
+	var tree = null;
+
+	var hover = null;
+	option_newTree.addEventListener("click", function( e ){
+		tree = createTree();
+		canvasState = new CanvasState( canvas, tree );
+		genContainer.style.backgroundColor = "#ffffff";
+		newSkeleton.style.display = "none";
+	});
+	/*
+	option.addEventListener("mouseover", function(e){
+		imagesWrapper.style.display = "block";
+		//wrapper.style.zindex = "2";
+		hover = true;
+	});
+	*/
+	option.addEventListener("click", function(e){
+		imagesWrapper.style.display = "block";
+		genContainer.style.backgroundColor = "#aaaaaa";
+		loadImages( canvas, tree, imagesWrapper, genContainer );
+		//wrapper.style.zindex = "2";
+		hover = false;
+	});
+	/*
+	option.addEventListener("mouseout", function(e){
+		closeTab( imagesWrapper, hover );
+	});
+	*/
+	back.addEventListener("click", function(e){
+		imagesWrapper.style.display = "none";
+		genContainer.style.backgroundColor = "#ffffff";
+		//wrapper.style.zindex = "-1";
+	});
+	if ( canvasState == null ) {
+		newSkeleton.style.display = "block";
+	} else {
+		newSkeleton.style.display = "none";
+	}
+	
+	
 }
+
+
+
+
+
+
+
+
+
+
+
 

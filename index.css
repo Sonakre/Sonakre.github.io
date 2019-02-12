@@ -1,35 +1,89 @@
-html {
+
+html,body {
   height: 100%;
-}
-body {
-  height: 100%;
-  margin: auto;
 }
 canvas {
 	border: 1px solid black;
+	flex: 1;
 }
-
-
-.container {
-	padding: 20px;
-	height: -webkit-fill-available;
+.wrapper {
 	display: flex;
+	height: -webkit-fill-available;
+	flex-direction: column;
+	background-color: #aaaaaa;
+}
+.container {
+	display: flex;
+	flex-direction: column;
+	flex-grow: 1;
+	padding-bottom: 10px;
 }
 
-.options {
-	width: 20%;
-}
-
-.options .option {
-	height: 100px;
-	border: 1px solid black;
-	margin-bottom: 20px;
+.row {
+	border: 1px solid red;
+	margin: 0;
+	background-color: #ffffff;
 }
 
 .canvasWrapper {
-	height: -webkit-fill-available;
-	width: 80%;
+	flex: 1;
 }
+
+#canvas {
+	flex: 1 100%;
+
+}
+#optionsWrapper {
+	padding-bottom: 0;
+	flex-direction: row;
+}
+.option {
+	border: 1px solid green;
+	padding: 5px 10px;
+	width: fit-content;
+}
+.option#first {
+
+}
+.back {
+	width: 20px;
+	height: 20px;
+	margin-left: auto;
+	margin-top: 0;
+	text-align: center;
+	cursor: pointer;
+}
+#imagesWrapper {
+	z-index: 3;
+	height: 400px;
+	width: 400px;
+	position: absolute;
+	border: 1px solid blue;
+	top: 0;
+	bottom: 0;
+  	left: 0; 
+  	right: 0; 
+  	margin: auto; 
+	display: none;
+	background-color: #ffffff;
+}
+.imageList {
+	padding: 10px;
+}
+.imageElement {
+	border: 1px solid pink;
+}
+#new-skeleton {
+	position: absolute;
+	text-align: center;
+	height: 1px;
+	top: 0;
+	bottom: 0;
+  	left: 0; 
+  	right: 0; 
+  	margin: auto; 
+}
+
 
 
 
