@@ -10,7 +10,17 @@ canvas {
 	display: flex;
 	height: -webkit-fill-available;
 	flex-direction: column;
-	background-color: #aaaaaa;
+	background-color: #040F0F;
+}
+#overlayContainer {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	background-color: #2D3A3A;
+	left: 0;
+	margin-top: 0;
+	position: absolute;
+	width: -webkit-fill-available;
 }
 .container {
 	display: flex;
@@ -31,7 +41,7 @@ canvas {
 
 #canvas {
 	flex: 1 100%;
-
+	background-color: #FCFFFC;
 }
 #optionsWrapper {
 	padding-bottom: 0;

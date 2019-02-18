@@ -167,7 +167,7 @@ Node.prototype.updateSubtreeLocal = function() {
 function Point( p ) {
 	this.x = p.x || 0;
 	this.y = p.y || 0;
-	this.radius = 10;
+	this.radius = 40;
 	this.fill = "";
 }
 
@@ -331,19 +331,44 @@ CanvasState.prototype.render = function( tree ) {
 }
 
 CanvasState.prototype.drawPoint = function( p, ctx ) {
-  	ctx.fillStyle = p.fill;
+  	ctx.strokeStyle = p.fill;
   	ctx.beginPath();
-  	ctx.arc(p.x, p.y, 10, 0, 2 * Math.PI);
-  	ctx.fill();
+  	ctx.arc(p.x, p.y, p.radius, 0, 2 * Math.PI);
+  	ctx.stroke();
+  	ctx.save();
+  	var image = new Image();
+	image.src = 'theme/image/point.png';
+	image.width = "20";
+	image.height = "20";
+	//ctx.drawImage( image, -image.width/2, 0, image.width, image.height );
+	ctx.drawImage( image, p.x-image.width/2, p.y-image.height/2, image.width, image.height );
+	ctx.restore();
 }
 
 // Draw line from p1 to p2 in canvas myState
 CanvasState.prototype.drawLine = function( p1, p2, ctx ) {
-	ctx.beginPath();
-	ctx.moveTo(p1.x, p1.y);
-	ctx.lineTo(p2.x, p2.y);
-	ctx.closePath();
-	ctx.stroke();
+	//ctx.beginPath();
+	//ctx.moveTo(p1.x, p1.y);
+	//ctx.lineTo(p2.x, p2.y);
+	//ctx.closePath();
+	//ctx.stroke();
+	ctx.save();
+	var dx = p2.x - p1.x;
+	var dy = p2.y - p1.y;
+	var distance = Math.hypot( p2.x - p1.x, p2.y - p1.y );
+	var rotation = Math.atan2(dy, dx);
+	var angleDegrees = rotation * (180/Math.PI);
+	var radians = (angleDegrees - 90) * (Math.PI/180);
+   	
+	ctx.translate( p1.x, p1.y );
+	ctx.rotate(radians);
+  	var image = new Image();
+	image.src = 'theme/image/line.png';
+	image.width = "40";
+	image.height = "100";
+	//ctx.drawImage( image, -image.width/2, 0, image.width, image.height );
+	ctx.drawImage( image, -image.width/2, 40, image.width, distance - 50 );
+	ctx.restore();
 }
 
 CanvasState.prototype.drawBody = function( node, ctx ) {
@@ -372,7 +397,7 @@ CanvasState.prototype.paintSkeleton = function( tree, myState ) {
   	while(queue.length) {
     	var node = queue.shift();
     	if (node.selected) node.point.fill="#ff0000";
-    	else node.point.fill="#aaaaaa";
+    	else node.point.fill="#0000ff";
     	if (node.parent != null) this.drawLine(node.point, node.parent.point, myState.ctx);
     	this.drawPoint( node.point, myState.ctx );
     	this.drawBody( node, myState.ctx );
