@@ -24,6 +24,7 @@ function Node() {
 	this.selected = true;
 	this.localMatrix = create();
 	this.globalMatrix = create();
+	this.images = [];
 }
 
 Node.prototype.translate = function() {
@@ -372,23 +373,33 @@ CanvasState.prototype.drawLine = function( p1, p2, ctx ) {
 }
 
 CanvasState.prototype.drawBody = function( node, ctx ) {
-	if ( !node.image ) return;
-	ctx.save();
-	if ( node.parent == null ) 
-		return;
+	if ( !node.imageNode && !node.imageLine ) return;
 	
-	var dx = node.point.x - node.parent.point.x;
-	var dy = node.point.y - node.parent.point.y;
-	var distance = Math.hypot( node.point.x - node.parent.point.x, node.point.y - node.parent.point.y );
-	var rotation = Math.atan2(dy, dx);
-	var angleDegrees = rotation * (180/Math.PI);
-	var radians = (angleDegrees - 90) * (Math.PI/180);
-   	
-	ctx.translate( node.parent.point.x, node.parent.point.y );
-	ctx.rotate(radians);
-  
-	ctx.drawImage( node.image, -node.image.width/2, 0, node.image.width, node.image.height );
-	ctx.restore();
+	if ( node.imageNode ) {
+		ctx.save();
+		ctx.drawImage( node.imageNode, node.point.x-node.imageNode.width/2, node.point.y-node.imageNode.height/2, node.imageNode.width, node.imageNode.height );
+		ctx.restore();
+			
+	} 
+	if ( node.imageLine ) {
+
+		//var n = node.children[0];
+		ctx.save();
+			
+		var dx = node.point.x - node.parent.point.x;
+		var dy = node.point.y - node.parent.point.y;
+		var distance = Math.hypot( node.point.x - node.parent.point.x, node.point.y - node.parent.point.y );
+		var rotation = Math.atan2(dy, dx);
+		var angleDegrees = rotation * (180/Math.PI);
+		var radians = (angleDegrees - 90) * (Math.PI/180);
+		   	
+		ctx.translate( node.parent.point.x, node.parent.point.y );
+		ctx.rotate(radians);
+		  
+		ctx.drawImage( node.imageLine, -node.imageLine.width/2, 0, node.imageLine.width, node.imageLine.height );
+		ctx.restore();
+	
+	}
 }
 
 // Paint skeleton tree on canvas myState
@@ -447,6 +458,10 @@ function loadImages( myState, tree, imagesWrapper, genContainer ) {
 	var arm = document.getElementById("first-image");
 	var foreArm = document.getElementById("second-image");
 	var hand = document.getElementById("third-image");
+	var overlay = document.getElementById("overlayPointLine");
+	var back = document.getElementById("backPointLine");
+	var line = document.getElementById("onLine");
+	var point = document.getElementById("onPoint");
 	
 	arm.addEventListener("click", function( e ){
 		if ( tree == null ) {
@@ -454,12 +469,18 @@ function loadImages( myState, tree, imagesWrapper, genContainer ) {
 			return;
 		}
 		var selectedNode = tree.findSelected();
-		selectedNode.image = new Image();
-		selectedNode.image.src = 'images/arm.png';
-		selectedNode.image.width = "50";
-		selectedNode.image.height = "100";
-		imagesWrapper.style.display = "none";
-		genContainer.style.backgroundColor = "#ffffff";
+		selectedNode.name = "arm";
+		if ( selectedNode.parent != null ) {
+			line.style.display = "flex";
+			point.style.right = "auto";
+			point.style.marginLeft = "30px";
+		}
+		else {
+			line.style.display = "none";
+			point.style.right = "0";
+			point.style.marginLeft = "auto";
+		}
+		overlay.style.display = "block";
 	});
 	foreArm.addEventListener("click", function( e ){
 		if ( tree == null ) {
@@ -467,12 +488,18 @@ function loadImages( myState, tree, imagesWrapper, genContainer ) {
 			return;
 		}
 		var selectedNode = tree.findSelected();
-		selectedNode.image = new Image();
-		selectedNode.image.src = 'images/fore-arm.png';
-		selectedNode.image.width = "50";
-		selectedNode.image.height = "100";
-		imagesWrapper.style.display = "none";
-		genContainer.style.backgroundColor = "#ffffff";
+		selectedNode.name = "fore-arm";
+		if ( selectedNode.parent != null ) {
+			line.style.display = "flex";
+			point.style.right = "auto";
+			point.style.marginLeft = "30px";
+		}
+		else {
+			line.style.display = "none";
+			point.style.right = "0";
+			point.style.marginLeft = "auto";
+		}
+		overlay.style.display = "block";
 	});
 	hand.addEventListener("click", function( e ){
 		if ( tree == null ) {
@@ -480,11 +507,45 @@ function loadImages( myState, tree, imagesWrapper, genContainer ) {
 			return;
 		}
 		var selectedNode = tree.findSelected();
-		selectedNode.image = new Image();
-		selectedNode.image.src = 'images/hand.png';
-		selectedNode.image.width = "50";
-		selectedNode.image.height = "50";
+		selectedNode.name = "hand";
+		if ( selectedNode.parent != null ) {
+			line.style.display = "flex";
+			point.style.right = "auto";
+			point.style.marginLeft = "30px";
+		}
+		else {
+			line.style.display = "none";
+			point.style.right = "0";
+			point.style.marginLeft = "auto";
+		}
+		overlay.style.display = "block";
+	});
+	back.addEventListener("click", function(e){
+		overlay.style.display = "none";
+		//genContainer.style.backgroundColor = "#ffffff";
+		//wrapper.style.zindex = "-1";
+	});
+	point.addEventListener("click", function( e ) {
+		var selectedNode = tree.findSelected();
+		selectedNode.imageNode = new Image();
+		selectedNode.imageNode.src = 'images/' + selectedNode.name + '.png';
+		selectedNode.imageNode.width = "50";
+		selectedNode.imageNode.height = "100";
+		selectedNode.onNode = true;
+		//selectedNode.images.push(selectedNode.image);
 		imagesWrapper.style.display = "none";
+		overlay.style.display = "none";
+		genContainer.style.backgroundColor = "#ffffff";
+	});
+	line.addEventListener("click", function( e ) {
+		var selectedNode = tree.findSelected();
+		selectedNode.imageLine = new Image();
+		selectedNode.imageLine.src = 'images/' + selectedNode.name + '.png';
+		selectedNode.imageLine.width = "50";
+		selectedNode.imageLine.height = "100";
+		selectedNode.onNode = false;
+		imagesWrapper.style.display = "none";
+		overlay.style.display = "none";
 		genContainer.style.backgroundColor = "#ffffff";
 	});
 }

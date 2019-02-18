@@ -80,6 +80,16 @@ canvas {
 .imageList {
 	padding: 10px;
 }
+#overlayPointLine {
+	padding: 0 0 10px 10px;
+	top: 0;
+	left: 0;
+	position: absolute;
+	background-color: #ffffff;
+	width: -webkit-fill-available;
+	height: -webkit-fill-available; 
+	text-align: center;
+}
 .imageElement {
 	border: 1px solid pink;
 }
@@ -93,7 +103,28 @@ canvas {
   	right: 0; 
   	margin: auto; 
 }
-
-
-
+.optionPointLine {
+	display: flex;
+	border: 1px solid green;
+	padding: 20px;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	position: absolute;
+	margin: auto;
+	height: fit-content;
+	width: fit-content;
+}
+#onPoint {
+	/*float: left;*/
+	/*margin-left: 30px;*/
+	
+}
+#onLine {
+	/*float: right;*/
+	right: 0;
+	margin-left: auto;
+	margin-right: 40px;
+}
 
