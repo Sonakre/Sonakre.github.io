@@ -76,6 +76,7 @@ canvas {
   	margin: auto; 
 	display: none;
 	background-color: #ffffff;
+	overflow: scroll;
 }
 .imageList {
 	padding: 10px;
@@ -119,7 +120,7 @@ canvas {
 #onPoint {
 	/*float: left;*/
 	/*margin-left: 30px;*/
-	
+
 }
 #onLine {
 	/*float: right;*/
