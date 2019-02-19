@@ -405,6 +405,7 @@ CanvasState.prototype.drawBody = function( node, ctx ) {
 // Paint skeleton tree on canvas myState
 CanvasState.prototype.paintSkeleton = function( tree, myState ) {
 	var queue = [tree.root];
+	
   	while(queue.length) {
     	var node = queue.shift();
     	if (node.selected) node.point.fill="#ff0000";
@@ -420,7 +421,12 @@ CanvasState.prototype.paintSkeleton = function( tree, myState ) {
 }
 
 
-
+/*
+function myFunction() {
+  points.sort(function(a, b){return a-b});
+  document.getElementById("demo").innerHTML = points;
+}
+*/
 
 
 
@@ -455,21 +461,34 @@ function closeTab( tab, hover ) {
 
 
 function loadImages( myState, tree, imagesWrapper, genContainer ) {
-	var arm = document.getElementById("first-image");
-	var foreArm = document.getElementById("second-image");
-	var hand = document.getElementById("third-image");
+	var head = document.getElementById("head");
+	var neck = document.getElementById("neck");
+	var body = document.getElementById("body");
+	var lowerBody = document.getElementById("lower-body");
+	var leftUpperArm = document.getElementById("left-upper-arm");
+	var leftLowerArm = document.getElementById("left-lower-arm");
+	var leftHand = document.getElementById("left-hand");
+	var rightUpperArm = document.getElementById("right-upper-arm");
+	var rightLowerArm = document.getElementById("right-lower-arm");
+	var rightHand = document.getElementById("right-hand");
+	var leftUpperLeg = document.getElementById("left-upper-leg");
+	var leftLowerLeg = document.getElementById("left-lower-leg");
+	var leftFoot = document.getElementById("left-foot");
+	var rightUpperLeg = document.getElementById("right-upper-leg");
+	var rightLowerLeg = document.getElementById("right-lower-leg");
+	var rightFoot = document.getElementById("right-foot");
 	var overlay = document.getElementById("overlayPointLine");
 	var back = document.getElementById("backPointLine");
 	var line = document.getElementById("onLine");
 	var point = document.getElementById("onPoint");
 	
-	arm.addEventListener("click", function( e ){
+	head.addEventListener("click", function( e ){
 		if ( tree == null ) {
 			imagesWrapper.style.display = "none";
 			return;
 		}
 		var selectedNode = tree.findSelected();
-		selectedNode.name = "arm";
+		selectedNode.name = "head";
 		if ( selectedNode.parent != null ) {
 			line.style.display = "flex";
 			point.style.right = "auto";
@@ -482,13 +501,13 @@ function loadImages( myState, tree, imagesWrapper, genContainer ) {
 		}
 		overlay.style.display = "block";
 	});
-	foreArm.addEventListener("click", function( e ){
+	neck.addEventListener("click", function( e ){
 		if ( tree == null ) {
 			imagesWrapper.style.display = "none";
 			return;
 		}
 		var selectedNode = tree.findSelected();
-		selectedNode.name = "fore-arm";
+		selectedNode.name = "neck";
 		if ( selectedNode.parent != null ) {
 			line.style.display = "flex";
 			point.style.right = "auto";
@@ -501,7 +520,83 @@ function loadImages( myState, tree, imagesWrapper, genContainer ) {
 		}
 		overlay.style.display = "block";
 	});
-	hand.addEventListener("click", function( e ){
+	body.addEventListener("click", function( e ){
+		if ( tree == null ) {
+			imagesWrapper.style.display = "none";
+			return;
+		}
+		var selectedNode = tree.findSelected();
+		selectedNode.name = "body";
+		if ( selectedNode.parent != null ) {
+			line.style.display = "flex";
+			point.style.right = "auto";
+			point.style.marginLeft = "30px";
+		}
+		else {
+			line.style.display = "none";
+			point.style.right = "0";
+			point.style.marginLeft = "auto";
+		}
+		overlay.style.display = "block";
+	});
+	lowerBody.addEventListener("click", function( e ){
+		if ( tree == null ) {
+			imagesWrapper.style.display = "none";
+			return;
+		}
+		var selectedNode = tree.findSelected();
+		selectedNode.name = "lower-body";
+		if ( selectedNode.parent != null ) {
+			line.style.display = "flex";
+			point.style.right = "auto";
+			point.style.marginLeft = "30px";
+		}
+		else {
+			line.style.display = "none";
+			point.style.right = "0";
+			point.style.marginLeft = "auto";
+		}
+		overlay.style.display = "block";
+	});
+	leftUpperArm.addEventListener("click", function( e ){
+		if ( tree == null ) {
+			imagesWrapper.style.display = "none";
+			return;
+		}
+		var selectedNode = tree.findSelected();
+		selectedNode.name = "upper-arm";
+		if ( selectedNode.parent != null ) {
+			line.style.display = "flex";
+			point.style.right = "auto";
+			point.style.marginLeft = "30px";
+		}
+		else {
+			line.style.display = "none";
+			point.style.right = "0";
+			point.style.marginLeft = "auto";
+		}
+		overlay.style.display = "block";
+	});
+	leftLowerArm.addEventListener("click", function( e ){
+		if ( tree == null ) {
+			imagesWrapper.style.display = "none";
+			return;
+		}
+		var selectedNode = tree.findSelected();
+		selectedNode.name = "lower-arm";
+		if ( selectedNode.parent != null ) {
+			line.style.display = "flex";
+			point.style.right = "auto";
+			point.style.marginLeft = "30px";
+		}
+		else {
+			line.style.display = "none";
+			point.style.right = "0";
+			point.style.marginLeft = "auto";
+		}
+		overlay.style.display = "block";
+	});
+	leftHand.addEventListener("click", function( e ){
 		if ( tree == null ) {
 			imagesWrapper.style.display = "none";
 			return;
@@ -520,6 +615,178 @@ function loadImages( myState, tree, imagesWrapper, genContainer ) {
 		}
 		overlay.style.display = "block";
 	});
+	rightUpperArm.addEventListener("click", function( e ){
+		if ( tree == null ) {
+			imagesWrapper.style.display = "none";
+			return;
+		}
+		var selectedNode = tree.findSelected();
+		selectedNode.name = "upper-arm-right";
+		if ( selectedNode.parent != null ) {
+			line.style.display = "flex";
+			point.style.right = "auto";
+			point.style.marginLeft = "30px";
+		}
+		else {
+			line.style.display = "none";
+			point.style.right = "0";
+			point.style.marginLeft = "auto";
+		}
+		overlay.style.display = "block";
+	});
+	rightLowerArm.addEventListener("click", function( e ){
+		if ( tree == null ) {
+			imagesWrapper.style.display = "none";
+			return;
+		}
+		var selectedNode = tree.findSelected();
+		selectedNode.name = "lower-arm-right";
+		if ( selectedNode.parent != null ) {
+			line.style.display = "flex";
+			point.style.right = "auto";
+			point.style.marginLeft = "30px";
+		}
+		else {
+			line.style.display = "none";
+			point.style.right = "0";
+			point.style.marginLeft = "auto";
+		}
+		overlay.style.display = "block";
+	});
+	rightHand.addEventListener("click", function( e ){
+		if ( tree == null ) {
+			imagesWrapper.style.display = "none";
+			return;
+		}
+		var selectedNode = tree.findSelected();
+		selectedNode.name = "hand-right";
+		if ( selectedNode.parent != null ) {
+			line.style.display = "flex";
+			point.style.right = "auto";
+			point.style.marginLeft = "30px";
+		}
+		else {
+			line.style.display = "none";
+			point.style.right = "0";
+			point.style.marginLeft = "auto";
+		}
+		overlay.style.display = "block";
+	});
+	leftUpperLeg.addEventListener("click", function( e ){
+		if ( tree == null ) {
+			imagesWrapper.style.display = "none";
+			return;
+		}
+		var selectedNode = tree.findSelected();
+		selectedNode.name = "upper-leg";
+		if ( selectedNode.parent != null ) {
+			line.style.display = "flex";
+			point.style.right = "auto";
+			point.style.marginLeft = "30px";
+		}
+		else {
+			line.style.display = "none";
+			point.style.right = "0";
+			point.style.marginLeft = "auto";
+		}
+		overlay.style.display = "block";
+	});
+	leftLowerLeg.addEventListener("click", function( e ){
+		if ( tree == null ) {
+			imagesWrapper.style.display = "none";
+			return;
+		}
+		var selectedNode = tree.findSelected();
+		selectedNode.name = "lower-leg";
+		if ( selectedNode.parent != null ) {
+			line.style.display = "flex";
+			point.style.right = "auto";
+			point.style.marginLeft = "30px";
+		}
+		else {
+			line.style.display = "none";
+			point.style.right = "0";
+			point.style.marginLeft = "auto";
+		}
+		overlay.style.display = "block";
+	});
+	leftFoot.addEventListener("click", function( e ){
+		if ( tree == null ) {
+			imagesWrapper.style.display = "none";
+			return;
+		}
+		var selectedNode = tree.findSelected();
+		selectedNode.name = "foot";
+		if ( selectedNode.parent != null ) {
+			line.style.display = "flex";
+			point.style.right = "auto";
+			point.style.marginLeft = "30px";
+		}
+		else {
+			line.style.display = "none";
+			point.style.right = "0";
+			point.style.marginLeft = "auto";
+		}
+		overlay.style.display = "block";
+	});
+	rightUpperLeg.addEventListener("click", function( e ){
+		if ( tree == null ) {
+			imagesWrapper.style.display = "none";
+			return;
+		}
+		var selectedNode = tree.findSelected();
+		selectedNode.name = "upper-leg-right";
+		if ( selectedNode.parent != null ) {
+			line.style.display = "flex";
+			point.style.right = "auto";
+			point.style.marginLeft = "30px";
+		}
+		else {
+			line.style.display = "none";
+			point.style.right = "0";
+			point.style.marginLeft = "auto";
+		}
+		overlay.style.display = "block";
+	});
+	rightLowerLeg.addEventListener("click", function( e ){
+		if ( tree == null ) {
+			imagesWrapper.style.display = "none";
+			return;
+		}
+		var selectedNode = tree.findSelected();
+		selectedNode.name = "lower-leg-right";
+		if ( selectedNode.parent != null ) {
+			line.style.display = "flex";
+			point.style.right = "auto";
+			point.style.marginLeft = "30px";
+		}
+		else {
+			line.style.display = "none";
+			point.style.right = "0";
+			point.style.marginLeft = "auto";
+		}
+		overlay.style.display = "block";
+	});
+	rightFoot.addEventListener("click", function( e ){
+		if ( tree == null ) {
+			imagesWrapper.style.display = "none";
+			return;
+		}
+		var selectedNode = tree.findSelected();
+		selectedNode.name = "foot-right";
+		if ( selectedNode.parent != null ) {
+			line.style.display = "flex";
+			point.style.right = "auto";
+			point.style.marginLeft = "30px";
+		}
+		else {
+			line.style.display = "none";
+			point.style.right = "0";
+			point.style.marginLeft = "auto";
+		}
+		overlay.style.display = "block";
+	});
+	
 	back.addEventListener("click", function(e){
 		overlay.style.display = "none";
 		//genContainer.style.backgroundColor = "#ffffff";
@@ -528,7 +795,7 @@ function loadImages( myState, tree, imagesWrapper, genContainer ) {
 	point.addEventListener("click", function( e ) {
 		var selectedNode = tree.findSelected();
 		selectedNode.imageNode = new Image();
-		selectedNode.imageNode.src = 'images/' + selectedNode.name + '.png';
+		selectedNode.imageNode.src = 'mob/' + selectedNode.name + '.png';
 		selectedNode.imageNode.width = "50";
 		selectedNode.imageNode.height = "100";
 		selectedNode.onNode = true;
@@ -540,7 +807,7 @@ function loadImages( myState, tree, imagesWrapper, genContainer ) {
 	line.addEventListener("click", function( e ) {
 		var selectedNode = tree.findSelected();
 		selectedNode.imageLine = new Image();
-		selectedNode.imageLine.src = 'images/' + selectedNode.name + '.png';
+		selectedNode.imageLine.src = 'mob/' + selectedNode.name + '.png';
 		selectedNode.imageLine.width = "50";
 		selectedNode.imageLine.height = "100";
 		selectedNode.onNode = false;
