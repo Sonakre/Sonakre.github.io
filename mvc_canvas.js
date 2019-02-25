@@ -1,302 +1,240 @@
-// Model
+//Model
 function Tree() {
 	this.root = null;
+	this.selected = true;
 }
 
-Tree.prototype.findSelected = function() {
-  	var queue = [this.root];
-  	while(queue.length) {
-    	var node = queue.shift();
-    	if(node.selected) {
-     		return node;
-    	}
-    	for(var i = 0; i < node.children.length; i++) {
-      		queue.push(node.children[i]);
-    	}
-  	}
-  	return null;
-};
-
-function Node() {
-	this.point = null;
-	this.parent = null;
-	this.children = [];
-	this.selected = true;
+function Node( px, py ) {
+	this.translation = {x: px, y: py};
+	this.rotation = 0;
+	this.scale = null;
 	this.localMatrix = create();
 	this.globalMatrix = create();
-	this.images = [];
+	this.children = [];
+	this.parent = null;
+	this.distance = null;
+	this.selected = true;
+	this.dim = 10;
+	this.orgRot = 0;
 }
 
-Node.prototype.translate = function() {
-	var node = this;
-	var point = this.point;
-	
-	if ( node.parent != null ){
-		var px = node.parent.point.x;
-		var py = node.parent.point.y;
-	} else {
-		var px = 0;
-		var py = 0;
-	}
-
-	var dist = (point.x - px) * (point.x - px) + (point.y - py) * (point.y - py);
-	var translateMatrix = create();
-
-	fromTranslation(translateMatrix, [Math.sqrt(dist),0]);
-
-	return translateMatrix;
-}
-
-Node.prototype.rotate = function() {
-	var node = this;
-	var point = node.point;
-	
-	if ( node.parent != null ){
-		var px = node.parent.point.x;
-		var py = node.parent.point.y;
-	} else {
-		var px = 0;
-		var py = 0;
-	}
-	var dx = point.x - px;
-	var dy = point.y - py;
-	var rot = Math.atan2(dy, dx);
-	var newRot = rot < 0 ? Math.PI + rot : 0;
-	var rotateMatrix = create();
-
-	if ( node.parent != null ) {
-		if ( node.parent.globalMatrix[1] < 0 && node.parent.globalMatrix[0] > 0 ) var rotParent = Math.asin( node.parent.globalMatrix[1] );
-		else if ( node.parent.globalMatrix[1] < 0 && node.parent.globalMatrix[0] < 0 ) var rotParent = - Math.acos( node.parent.globalMatrix[0] );
-		else var rotParent = Math.acos( node.parent.globalMatrix[0] );
-		var sign = rot > rotParent ? 1 : -1;
-		rot = rot - rotParent;
-		//var K = -sign * Math.PI * 2;
-    	//var rot = (Math.abs(K + rot) < Math.abs(rot))? K + rot : rot;
-	}
-
-	fromRotation( rotateMatrix, rot );
-
-	return rotateMatrix;
-}
-
-Node.prototype.getLocal = function() {
-	//console.log(this.parent.;
-	var translateMatrix = this.translate();
-	var rotateMatrix = this.rotate();
-
-	//this.localMatrix = [rotateMatrix[0], rotateMatrix[1], rotateMatrix[2], rotateMatrix[3], rotateMatrix[4], rotateMatrix[5], translateMatrix[6], translateMatrix[7], translateMatrix[8]];
-	multiply( this.localMatrix, rotateMatrix, translateMatrix );	
-}
-
-Node.prototype.getGlobal = function() {
-	var node = this;
-	if ( node.parent == null ) {
-		node.globalMatrix = node.localMatrix;
-	} else {
-
-		multiply( node.globalMatrix, node.parent.globalMatrix, node.localMatrix );
-
-	}
-}
-
-Node.prototype.updatePoint = function() {
-	var n = this;
-	if ( n.parent == null ) {
-		n.point.x = n.localMatrix[6];
-		n.point.y = n.localMatrix[7];
-	} else {
-		console.log(Math.acos(n.globalMatrix[0]) * 180/Math.PI);
-		var p = [];
-		transformMat3(p, [0,0], n.globalMatrix);
-		n.point.x = p[0];
-		n.point.y = p[1];
-	}
-
-}
-
-Node.prototype.addChild = function( node, tree ) {
-	var n = this;
-	
-	n.selected = false;
-	n.children.push( node );
-	node.parent = n;
-		
-	node.getLocal();
-	node.getGlobal();
-	node.updatePoint();
-}
-
-Node.prototype.update = function( mouse ) {
-	var n = this;
-	
-	n.point.x = mouse.x;
-	n.point.y = mouse.y;
-	
-	n.globalMatrix[6] = mouse.x;
-	n.globalMatrix[7] = mouse.y;
-	
-	for ( var i = 0; i < n.children.length; i++ ) {
-		n.children[i].updateSubtree();
-	}
-}
-
-Node.prototype.updateSubtree = function() {
-	var queue = [this];
-  	while(queue.length) {
-    	var node = queue.shift();
-    	node.getGlobal();
-		node.updatePoint();
-    	for(var i = 0; i < node.children.length; i++) {
-      		queue.push(node.children[i]);
-    	}
-  	}
-}
-
-Node.prototype.updateSubtreeLocal = function() {
-	var queue = [this];
-  	while(queue.length) {
-    	var node = queue.shift();
-    	node.getLocal();
-    	node.getGlobal();
-		node.updatePoint();
-    	for(var i = 0; i < node.children.length; i++) {
-      		queue.push(node.children[i]);
-    	}
-  	}
-}
-
-function Point( p ) {
-	this.x = p.x || 0;
-	this.y = p.y || 0;
-	this.radius = 40;
-	this.fill = "";
-}
-
-Point.prototype.contains = function( mx, my ) {
-  	var distsq = (mx - this.x) * (mx - this.x) + (my - this.y) * (my - this.y);
-  	var rsq = this.radius * this.radius;
-
-  	return distsq < rsq;
-}
-
-Point.prototype.findBFS = function( tree ) {
-  	var queue = [tree.root];
-  	var p = this;
-  	while(queue.length) {
-    	var node = queue.shift();
-    	if(node.point.contains(p.x, p.y)) {
-     		return node;
-    	}
-    	for(var i = 0; i < node.children.length; i++) {
-      		queue.push(node.children[i]);
-    	}
-  	}
-  	return null;
-};
 
 
-// Controller
-function CanvasState( canvas, tree ) {
+
+//Controller
+//function CanvasState( canvas, node1 ) {
+function CanvasState( canvas, rotate ) {
 	this.canvas = canvas;
 	this.ctx = canvas.getContext("2d");
-	this.mouse = null;
+	this.rotate = rotate;
+	this.trees = [];
+	this.mouse = {x: 0, y: 0};
 	this.drag = false;
+
+	var myState = this;
 	
-	var myState = this;
-	//var selectedNode = new Node();
 
-	canvas.addEventListener( "mousemove", function( e ) {
-		if ( myState.drag ) {
-			myState.movePoint( e, tree );
-		}
+	myState.canvas.addEventListener( "mousedown", function( e ) {
+		myState.mouseDown( e );
 	});
 
-	canvas.addEventListener( "mousedown", function( e ) {
-		myState.mouse = myState.getMouse( e );
-		myState.mousedown( myState.mouse, tree );
-
+	myState.canvas.addEventListener( "mouseup", function( e ) {
+		myState.mouseUp( e );
 	});
 
-	canvas.addEventListener( "mouseup", function( e ) {
-		var mouse = myState.getMouse( e );
-		myState.mouseup( mouse, tree );
-		myState.drag = false;
-	});
+	var node1 = new Node( 250, 250 );
+	/*
+	node1.translation.x = 250;
+	node1.translation.y = 250;
+	*/
+	node1.localMatrix = [ 1, 0, 0, 0, 1, 0, node1.translation.x, node1.translation.y, 1 ];
+	node1.calculateGlobalMatrix();
+	var node2 = new Node( 300, 300 );
+	var node3 = new Node( 200, 400 );
 
-	myState.render( tree );
+	node1.addChild( node2 );
+	node2.addChild( node3 );
+
+
+
+
+
+	//console.log( node1 );
+
+	requestAnimationFrame( function() { myState.paint( myState.trees ) } );
+	//return node1;
 }
 
-CanvasState.prototype.movePoint = function( e, tree ) {
-	var myState = this;
-	var mouse = myState.getMouse( e );
-	var n = tree.findSelected();
+CanvasState.prototype.mouseUp = function( e ) {
+	var mouse = this.getMouse( e );
 
-	n.update( mouse );
-	//console.log(n);
-}
-
-CanvasState.prototype.mouseup = function( mouse, tree ) {
-	var myState = this;
-	var m = new Point( mouse );
-	//myState.createNode( m, tree );
-	if ( mouse.x == myState.mouse.x && mouse.y == myState.mouse.y ) {
-		console.log( mouse );
-		var node = null;
-		if ( tree.root != null ) {
-			var m = new Point( mouse );
-			node = m.findBFS( tree );
-			
-		}
-		if ( node == null ) {
-			myState.createNode(  mouse, tree );
-			//console.log(selectedNode);
+	if ( mouse.x == this.mouse.x && mouse.y == this.mouse.y ) {
+		if ( !this.hasTree() ) {
+			var tree = new Tree();
+			tree.addRoot( mouse );
+			this.trees.push( tree );
 		} else {
-			tree.findSelected().selected = false;
-			node.selected = true;
+			var tree = null;
+			for ( var i = 0; i < this.trees.length; i++ ) {
+				if ( this.trees[i].selected ) tree = this.trees[i];
+			}
+			var node = treeHasPoint( tree.root, this.mouse );
+			if ( node != null ) {
+				tree.root.findSelected().selected = false;
+				node.selected = true;
+			} else {
+				tree.root.findSelected().addChild( mouse );
+			}
+
 		}
-	} else {
-		var node = tree.findSelected();
-		console.log(tree);	
-		node.getLocal();
-		node.updateSubtreeLocal();
-		//node.getGlobal();
-		//node.updatePoint();
+
 	}
 }
 
-
-CanvasState.prototype.mousedown = function( mouse, tree ) {
-	var myState = this;
-	if ( tree.root != null ) {
-		var m = new Point( mouse );
-		var node = m.findBFS( tree );
-		if ( node != null ) {
-			tree.findSelected().selected = false;
-			node.selected = true;
-			myState.drag = true;
-		}
-	}
+Tree.prototype.addRoot = function( point ) {
+	var node = new Node( point.x, point.y );
+	node.localMatrix = [ 1, 0, 0, 0, 1, 0, node.translation.x, node.translation.y, 1 ];
+	node.calculateGlobalMatrix();
+	this.root = node;
 }
 
+Node.prototype.contains = function( point ) {
+	return this.translation.x <= point.x && 
+			point.x <= this.translation.x + this.dim &&
+            this.translation.y <= point.y && 
+            point.y <= this.translation.y + this.dim;
+}
 
+Node.prototype.findSelected = function() {
+	if ( this.selected ) return this;
 
-CanvasState.prototype.createNode = function( mouse, tree ) {
-	var node = new Node();
+	var tree = null;
+	for ( var i = 0; i < this.children.length; i++ ) {
+		tree = this.children[i].findSelected();
+	}
+	return tree;
+}
 
-	node.point = new Point( mouse );
-	var selectedNode = null;
+function treeHasPoint( node, point ) {
+	if ( node.contains( point ) ) return node;
 	
-	if ( tree.root != null ) {
-		selectedNode = tree.findSelected();
-		selectedNode.addChild( node, tree );	
-	} else {
-		node.getLocal();
-		node.getGlobal();
-		node.updatePoint();
-		tree.root = node;
+	if ( node.children.length == 0 ) {
+		return null;
+	}	
+
+	for ( var i = 0; i < node.children.length; i++ ) {
+		treeHasPoint( node.children[i], point );
 	}
+}
+
+CanvasState.prototype.mouseDown = function( e ) {
+	this.mouse = this.getMouse( e );
+	
+	if ( !this.hasTree() ) return;
+	
+	var tree = null;
+	for ( var i = 0; i < this.trees.length; i++ ) {
+		if ( this.trees[i].selected ) tree = this.trees[i];
+	}
+	var node = treeHasPoint( tree.root, this.mouse );
+	if ( node == null ) return;
+
+	tree.root.findSelected().selected = false;
+	node.selected = true;
+	this.drag = true;
+}
+
+CanvasState.prototype.hasTree = function() {
+	if ( this.trees.length > 0 ) return true;
+	else return false;
+}
+
+Node.prototype.calculateGlobalMatrix = function() {
+	if ( this.parent == null ) {
+		this.globalMatrix = this.localMatrix;
+	} else {
+		multiply( this.globalMatrix, this.parent.globalMatrix, this.localMatrix );
+	}
+}
+
+Node.prototype.calculateLocalMatrix = function() {
+	var translationM = create();
+	var rotationM = create();
+	translationM = [ 1, 0, 0, 0, 1, 0, this.distance * Math.cos( this.rotation ), this.distance * Math.sin( this.rotation ), 1 ];
+	rotationM = [ Math.cos( this.rotation ), Math.sin( this.rotation ), 0, - Math.sin( this.rotation ), Math.cos( this.rotation ), 0, 0, 0, 1 ];
+	multiply( this.localMatrix, translationM, rotationM );	
+}
+
+Node.prototype.addChild = function( point ) {
+	this.selected = false;
+	var node = new Node( point.x, point.y );
+	var parent = this;
+	var dist = parent.getDistance( node );
+	var rad = parent.getRotation( node );
+	node.distance = dist;
+	node.rotation = rad;
+	node.calculateLocalMatrix();
+	node.parent = parent;
+	parent.children.push( node );
+	node.calculateGlobalMatrix();
+}
+
+Node.prototype.getDistance = function( node ) {
+	var dx = node.translation.x - this.translation.x;
+	var dy = node.translation.y - this.translation.y;
+	return Math.sqrt( (dx) * (dx) + (dy) * (dy) );
+}
+
+Node.prototype.getRotation = function( node ) {
+	var dx = node.translation.x - this.translation.x;
+	var dy = node.translation.y - this.translation.y;
+	var rad = Math.atan2( dy, dx );
+	node.orgRot = rad;
+	var angle = rad / Math.PI * 180.0;
+	var pangle = this.orgRot / Math.PI * 180.0;
+	var r = angle - pangle;
+	var rot = r * Math.PI / 180.0; 
+	return rot;
+}
 
 
+Node.prototype.translatePoint = function() {
+	this.translation.x = this.parent.translation.x + this.distance * Math.cos( this.rotation );
+	this.translation.y = this.parent.translation.y + this.distance * Math.sin( this.rotation );
+}
+
+
+Node.prototype.updateMatrices = function() {
+	this.updateLocal();
+	this.updateGlobal();
+}
+
+Node.prototype.updateLocal = function() {
+	this.calculateLocalMatrix();
+}
+
+Node.prototype.updateGlobal = function() {
+	this.calculateGlobalMatrix();
+
+	for ( var i = 0; i < this.children.length; i++ ) {
+		this.children[i].updateGlobal();
+	}
+}
+
+function rotatePoint( point, origin, angle ) {
+//function rotatePoint( myState, node1, angle ) {
+	var radians = angle * Math.PI / 180.0,
+	cos = Math.cos(radians),
+	sin = Math.sin(radians),
+	dX = point.translation.x - origin.translation.x,
+	dY = point.translation.y - origin.translation.y;
+	var dist = Math.sqrt( (dX) * (dX) + (dY) * (dY) );
+	point.translation.x = cos * dX - sin * dY + origin.translation.x;
+	point.translation.y = sin * dX + cos * dY + origin.translation.y;
+	point.rotation = Math.atan2( dX, -dY );
+
+	point.updateMatrices();
+	
 }
 
 CanvasState.prototype.getMouse = function( e ) {
@@ -317,510 +255,69 @@ CanvasState.prototype.getMouse = function( e ) {
 
 }
 
-// View
-CanvasState.prototype.render = function( tree ) {
+
+//View
+CanvasState.prototype.isRotating = function() {
+	return this.rotate;
+}
+CanvasState.prototype.activateRotation = function() {
+	this.rotate = true;
+}
+CanvasState.prototype.desactivateRotation = function() {
+	this.rotate = false;
+}
+CanvasState.prototype.paint = function( trees ) {
 	var myState = this;
 
-  	myState.ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  	if(tree.root != null){
-  		myState.paintSkeleton( tree, myState );
-  	}
-  
-   
-  	requestAnimationFrame( function() { myState.render( tree ) } );
-}
-
-CanvasState.prototype.drawPoint = function( p, ctx ) {
-  	ctx.strokeStyle = p.fill;
-  	ctx.beginPath();
-  	ctx.arc(p.x, p.y, p.radius, 0, 2 * Math.PI);
-  	ctx.stroke();
-  	ctx.save();
-  	var image = new Image();
-	image.src = 'theme/image/point.png';
-	image.width = "20";
-	image.height = "20";
-	//ctx.drawImage( image, -image.width/2, 0, image.width, image.height );
-	ctx.drawImage( image, p.x-image.width/2, p.y-image.height/2, image.width, image.height );
-	ctx.restore();
-}
-
-// Draw line from p1 to p2 in canvas myState
-CanvasState.prototype.drawLine = function( p1, p2, ctx ) {
-	//ctx.beginPath();
-	//ctx.moveTo(p1.x, p1.y);
-	//ctx.lineTo(p2.x, p2.y);
-	//ctx.closePath();
-	//ctx.stroke();
-	ctx.save();
-	var dx = p2.x - p1.x;
-	var dy = p2.y - p1.y;
-	var distance = Math.hypot( p2.x - p1.x, p2.y - p1.y );
-	var rotation = Math.atan2(dy, dx);
-	var angleDegrees = rotation * (180/Math.PI);
-	var radians = (angleDegrees - 90) * (Math.PI/180);
-   	
-	ctx.translate( p1.x, p1.y );
-	ctx.rotate(radians);
-  	var image = new Image();
-	image.src = 'theme/image/line.png';
-	image.width = "40";
-	image.height = "100";
-	//ctx.drawImage( image, -image.width/2, 0, image.width, image.height );
-	ctx.drawImage( image, -image.width/2, 40, image.width, distance - 50 );
-	ctx.restore();
-}
-
-CanvasState.prototype.drawBody = function( node, ctx ) {
-	if ( !node.imageNode && !node.imageLine ) return;
-	
-	if ( node.imageNode ) {
-		ctx.save();
-		ctx.drawImage( node.imageNode, node.point.x-node.imageNode.width/2, node.point.y-node.imageNode.height/2, node.imageNode.width, node.imageNode.height );
-		ctx.restore();
-			
-	} 
-	if ( node.imageLine ) {
-
-		//var n = node.children[0];
-		ctx.save();
-			
-		var dx = node.point.x - node.parent.point.x;
-		var dy = node.point.y - node.parent.point.y;
-		var distance = Math.hypot( node.point.x - node.parent.point.x, node.point.y - node.parent.point.y );
-		var rotation = Math.atan2(dy, dx);
-		var angleDegrees = rotation * (180/Math.PI);
-		var radians = (angleDegrees - 90) * (Math.PI/180);
-		   	
-		ctx.translate( node.parent.point.x, node.parent.point.y );
-		ctx.rotate(radians);
-		  
-		ctx.drawImage( node.imageLine, -node.imageLine.width/2, 0, node.imageLine.width, node.imageLine.height );
-		ctx.restore();
-	
+	myState.ctx.clearRect( 0, 0, myState.canvas.width, myState.canvas.height );
+	for ( var i = 0; i < trees.length; i++ ) {
+		myState.paintSkeleton( trees[i].root );	
 	}
-}
+	 
 
-// Paint skeleton tree on canvas myState
-CanvasState.prototype.paintSkeleton = function( tree, myState ) {
-	var queue = [tree.root];
+	var d = new Date();
 	
-  	while(queue.length) {
-    	var node = queue.shift();
-    	if (node.selected) node.point.fill="#ff0000";
-    	else node.point.fill="#0000ff";
-    	if (node.parent != null) this.drawLine(node.point, node.parent.point, myState.ctx);
-    	this.drawPoint( node.point, myState.ctx );
-    	this.drawBody( node, myState.ctx );
+	if ( myState.rotate ) {
+		for ( var i = 0; i < trees[0].root.children.length; i++ ) {
+			rotatePoint( trees[0].root.children[i], trees[0].root, d.getSeconds() / 10 );
+		}
+		
+	}
 
-    	for(var i = 0; i < node.children.length; i++) {
-      		queue.push(node.children[i]);
-    	}
-  	}
+	requestAnimationFrame( function() { myState.paint( trees ) } );
+}
+CanvasState.prototype.paintSkeleton = function( node ) {
+	this.paintNode( node );
+
+	if ( node.children.length == 0 ) return;
+
+	for ( var i = 0; i < node.children.length; i++ ) {
+		//this.paintNode( node.children[i] );
+		this.paintSkeleton( node.children[i] );
+	}
+	
 }
 
-
+CanvasState.prototype.paintNode = function( node ) {
 /*
-function myFunction() {
-  points.sort(function(a, b){return a-b});
-  document.getElementById("demo").innerHTML = points;
-}
+	this.ctx.save();
+	this.ctx.translate( node.translation.x, node.translation.y );
+	this.ctx.rotate( node.rotation );
+	this.ctx.strokeStyle = "#000000";
+  	this.ctx.beginPath();
+  	this.ctx.rect(0, 0, 10, 10);
+  	this.ctx.stroke();
+  	this.ctx.restore();
 */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-function closeTab( tab, hover ) {
-	if ( !hover ) return;
-	
-	tab.style.display = "none";
-	
-
-}
-
-
-function loadImages( myState, tree, imagesWrapper, genContainer ) {
-	var head = document.getElementById("head");
-	var neck = document.getElementById("neck");
-	var body = document.getElementById("body");
-	var lowerBody = document.getElementById("lower-body");
-	var leftUpperArm = document.getElementById("left-upper-arm");
-	var leftLowerArm = document.getElementById("left-lower-arm");
-	var leftHand = document.getElementById("left-hand");
-	var rightUpperArm = document.getElementById("right-upper-arm");
-	var rightLowerArm = document.getElementById("right-lower-arm");
-	var rightHand = document.getElementById("right-hand");
-	var leftUpperLeg = document.getElementById("left-upper-leg");
-	var leftLowerLeg = document.getElementById("left-lower-leg");
-	var leftFoot = document.getElementById("left-foot");
-	var rightUpperLeg = document.getElementById("right-upper-leg");
-	var rightLowerLeg = document.getElementById("right-lower-leg");
-	var rightFoot = document.getElementById("right-foot");
-	var overlay = document.getElementById("overlayPointLine");
-	var back = document.getElementById("backPointLine");
-	var line = document.getElementById("onLine");
-	var point = document.getElementById("onPoint");
-	
-	head.addEventListener("click", function( e ){
-		if ( tree == null ) {
-			imagesWrapper.style.display = "none";
-			return;
-		}
-		var selectedNode = tree.findSelected();
-		selectedNode.name = "head";
-		if ( selectedNode.parent != null ) {
-			line.style.display = "flex";
-			point.style.right = "auto";
-			point.style.marginLeft = "30px";
-		}
-		else {
-			line.style.display = "none";
-			point.style.right = "0";
-			point.style.marginLeft = "auto";
-		}
-		overlay.style.display = "block";
-	});
-	neck.addEventListener("click", function( e ){
-		if ( tree == null ) {
-			imagesWrapper.style.display = "none";
-			return;
-		}
-		var selectedNode = tree.findSelected();
-		selectedNode.name = "neck";
-		if ( selectedNode.parent != null ) {
-			line.style.display = "flex";
-			point.style.right = "auto";
-			point.style.marginLeft = "30px";
-		}
-		else {
-			line.style.display = "none";
-			point.style.right = "0";
-			point.style.marginLeft = "auto";
-		}
-		overlay.style.display = "block";
-	});
-	body.addEventListener("click", function( e ){
-		if ( tree == null ) {
-			imagesWrapper.style.display = "none";
-			return;
-		}
-		var selectedNode = tree.findSelected();
-		selectedNode.name = "body";
-		if ( selectedNode.parent != null ) {
-			line.style.display = "flex";
-			point.style.right = "auto";
-			point.style.marginLeft = "30px";
-		}
-		else {
-			line.style.display = "none";
-			point.style.right = "0";
-			point.style.marginLeft = "auto";
-		}
-		overlay.style.display = "block";
-	});
-	lowerBody.addEventListener("click", function( e ){
-		if ( tree == null ) {
-			imagesWrapper.style.display = "none";
-			return;
-		}
-		var selectedNode = tree.findSelected();
-		selectedNode.name = "lower-body";
-		if ( selectedNode.parent != null ) {
-			line.style.display = "flex";
-			point.style.right = "auto";
-			point.style.marginLeft = "30px";
-		}
-		else {
-			line.style.display = "none";
-			point.style.right = "0";
-			point.style.marginLeft = "auto";
-		}
-		overlay.style.display = "block";
-	});
-	leftUpperArm.addEventListener("click", function( e ){
-		if ( tree == null ) {
-			imagesWrapper.style.display = "none";
-			return;
-		}
-		var selectedNode = tree.findSelected();
-		selectedNode.name = "upper-arm";
-		if ( selectedNode.parent != null ) {
-			line.style.display = "flex";
-			point.style.right = "auto";
-			point.style.marginLeft = "30px";
-		}
-		else {
-			line.style.display = "none";
-			point.style.right = "0";
-			point.style.marginLeft = "auto";
-		}
-		overlay.style.display = "block";
-	});
-	leftLowerArm.addEventListener("click", function( e ){
-		if ( tree == null ) {
-			imagesWrapper.style.display = "none";
-			return;
-		}
-		var selectedNode = tree.findSelected();
-		selectedNode.name = "lower-arm";
-		if ( selectedNode.parent != null ) {
-			line.style.display = "flex";
-			point.style.right = "auto";
-			point.style.marginLeft = "30px";
-		}
-		else {
-			line.style.display = "none";
-			point.style.right = "0";
-			point.style.marginLeft = "auto";
-		}
-		overlay.style.display = "block";
-	});
-	leftHand.addEventListener("click", function( e ){
-		if ( tree == null ) {
-			imagesWrapper.style.display = "none";
-			return;
-		}
-		var selectedNode = tree.findSelected();
-		selectedNode.name = "hand";
-		if ( selectedNode.parent != null ) {
-			line.style.display = "flex";
-			point.style.right = "auto";
-			point.style.marginLeft = "30px";
-		}
-		else {
-			line.style.display = "none";
-			point.style.right = "0";
-			point.style.marginLeft = "auto";
-		}
-		overlay.style.display = "block";
-	});
-	rightUpperArm.addEventListener("click", function( e ){
-		if ( tree == null ) {
-			imagesWrapper.style.display = "none";
-			return;
-		}
-		var selectedNode = tree.findSelected();
-		selectedNode.name = "upper-arm-right";
-		if ( selectedNode.parent != null ) {
-			line.style.display = "flex";
-			point.style.right = "auto";
-			point.style.marginLeft = "30px";
-		}
-		else {
-			line.style.display = "none";
-			point.style.right = "0";
-			point.style.marginLeft = "auto";
-		}
-		overlay.style.display = "block";
-	});
-	rightLowerArm.addEventListener("click", function( e ){
-		if ( tree == null ) {
-			imagesWrapper.style.display = "none";
-			return;
-		}
-		var selectedNode = tree.findSelected();
-		selectedNode.name = "lower-arm-right";
-		if ( selectedNode.parent != null ) {
-			line.style.display = "flex";
-			point.style.right = "auto";
-			point.style.marginLeft = "30px";
-		}
-		else {
-			line.style.display = "none";
-			point.style.right = "0";
-			point.style.marginLeft = "auto";
-		}
-		overlay.style.display = "block";
-	});
-	rightHand.addEventListener("click", function( e ){
-		if ( tree == null ) {
-			imagesWrapper.style.display = "none";
-			return;
-		}
-		var selectedNode = tree.findSelected();
-		selectedNode.name = "hand-right";
-		if ( selectedNode.parent != null ) {
-			line.style.display = "flex";
-			point.style.right = "auto";
-			point.style.marginLeft = "30px";
-		}
-		else {
-			line.style.display = "none";
-			point.style.right = "0";
-			point.style.marginLeft = "auto";
-		}
-		overlay.style.display = "block";
-	});
-	leftUpperLeg.addEventListener("click", function( e ){
-		if ( tree == null ) {
-			imagesWrapper.style.display = "none";
-			return;
-		}
-		var selectedNode = tree.findSelected();
-		selectedNode.name = "upper-leg";
-		if ( selectedNode.parent != null ) {
-			line.style.display = "flex";
-			point.style.right = "auto";
-			point.style.marginLeft = "30px";
-		}
-		else {
-			line.style.display = "none";
-			point.style.right = "0";
-			point.style.marginLeft = "auto";
-		}
-		overlay.style.display = "block";
-	});
-	leftLowerLeg.addEventListener("click", function( e ){
-		if ( tree == null ) {
-			imagesWrapper.style.display = "none";
-			return;
-		}
-		var selectedNode = tree.findSelected();
-		selectedNode.name = "lower-leg";
-		if ( selectedNode.parent != null ) {
-			line.style.display = "flex";
-			point.style.right = "auto";
-			point.style.marginLeft = "30px";
-		}
-		else {
-			line.style.display = "none";
-			point.style.right = "0";
-			point.style.marginLeft = "auto";
-		}
-		overlay.style.display = "block";
-	});
-	leftFoot.addEventListener("click", function( e ){
-		if ( tree == null ) {
-			imagesWrapper.style.display = "none";
-			return;
-		}
-		var selectedNode = tree.findSelected();
-		selectedNode.name = "foot";
-		if ( selectedNode.parent != null ) {
-			line.style.display = "flex";
-			point.style.right = "auto";
-			point.style.marginLeft = "30px";
-		}
-		else {
-			line.style.display = "none";
-			point.style.right = "0";
-			point.style.marginLeft = "auto";
-		}
-		overlay.style.display = "block";
-	});
-	rightUpperLeg.addEventListener("click", function( e ){
-		if ( tree == null ) {
-			imagesWrapper.style.display = "none";
-			return;
-		}
-		var selectedNode = tree.findSelected();
-		selectedNode.name = "upper-leg-right";
-		if ( selectedNode.parent != null ) {
-			line.style.display = "flex";
-			point.style.right = "auto";
-			point.style.marginLeft = "30px";
-		}
-		else {
-			line.style.display = "none";
-			point.style.right = "0";
-			point.style.marginLeft = "auto";
-		}
-		overlay.style.display = "block";
-	});
-	rightLowerLeg.addEventListener("click", function( e ){
-		if ( tree == null ) {
-			imagesWrapper.style.display = "none";
-			return;
-		}
-		var selectedNode = tree.findSelected();
-		selectedNode.name = "lower-leg-right";
-		if ( selectedNode.parent != null ) {
-			line.style.display = "flex";
-			point.style.right = "auto";
-			point.style.marginLeft = "30px";
-		}
-		else {
-			line.style.display = "none";
-			point.style.right = "0";
-			point.style.marginLeft = "auto";
-		}
-		overlay.style.display = "block";
-	});
-	rightFoot.addEventListener("click", function( e ){
-		if ( tree == null ) {
-			imagesWrapper.style.display = "none";
-			return;
-		}
-		var selectedNode = tree.findSelected();
-		selectedNode.name = "foot-right";
-		if ( selectedNode.parent != null ) {
-			line.style.display = "flex";
-			point.style.right = "auto";
-			point.style.marginLeft = "30px";
-		}
-		else {
-			line.style.display = "none";
-			point.style.right = "0";
-			point.style.marginLeft = "auto";
-		}
-		overlay.style.display = "block";
-	});
-	
-	back.addEventListener("click", function(e){
-		overlay.style.display = "none";
-		//genContainer.style.backgroundColor = "#ffffff";
-		//wrapper.style.zindex = "-1";
-	});
-	point.addEventListener("click", function( e ) {
-		var selectedNode = tree.findSelected();
-		selectedNode.imageNode = new Image();
-		selectedNode.imageNode.src = 'mob/' + selectedNode.name + '.png';
-		selectedNode.imageNode.width = "50";
-		selectedNode.imageNode.height = "100";
-		selectedNode.onNode = true;
-		//selectedNode.images.push(selectedNode.image);
-		imagesWrapper.style.display = "none";
-		overlay.style.display = "none";
-		genContainer.style.backgroundColor = "#ffffff";
-	});
-	line.addEventListener("click", function( e ) {
-		var selectedNode = tree.findSelected();
-		selectedNode.imageLine = new Image();
-		selectedNode.imageLine.src = 'mob/' + selectedNode.name + '.png';
-		selectedNode.imageLine.width = "50";
-		selectedNode.imageLine.height = "100";
-		selectedNode.onNode = false;
-		imagesWrapper.style.display = "none";
-		overlay.style.display = "none";
-		genContainer.style.backgroundColor = "#ffffff";
-	});
-}
-
-function createTree() {
-	var tree = new Tree();
-
-	return tree;
+	var m = node.globalMatrix;
+	this.ctx.setTransform( m[0], m[1], m[3], m[4], m[6], m[7] );
+  	//this.ctx.setTransform( 1, 0, 0, 1, node.translation.x, node.translation.y );
+  	//this.ctx.rotate( node.rotation );
+  	this.ctx.strokeStyle = "#000000";
+  	this.ctx.beginPath();
+  	this.ctx.rect(0, 0, 10, 10);
+  	this.ctx.stroke();
+  	this.ctx.setTransform(1, 0, 0, 1, 0, 0);
 }
 
 
@@ -828,61 +325,29 @@ function createTree() {
 
 
 
-//
+//init
 function init() {
-	var option_newTree = document.getElementById("new-tree");
 	var wrapper = document.getElementById("canvasWrapper");
 	var canvas = document.getElementById("canvas");
-	var canvasState = null;
 	canvas.height = wrapper.offsetHeight;
 	canvas.width = wrapper.offsetWidth;
-	var wrapper = document.getElementById("wrapper");
-	var option = document.getElementById("first");
-	var imagesWrapper = document.getElementById("imagesWrapper");
-	var back = document.getElementById("back");
-	var genContainer = document.getElementById("generalContainer");
-	var newSkeleton = document.getElementById("new-skeleton");
-	var tree = null;
+	//var node1 = new Node();
+	//var canvasState = new CanvasState( canvas, node1 );
+	var canvasState = new CanvasState( canvas, false );
+	//canvasState.rotate = false;
+	var rotate = document.getElementById("rotate");
 
-	var hover = null;
-	option_newTree.addEventListener("click", function( e ){
-		tree = createTree();
-		canvasState = new CanvasState( canvas, tree );
-		genContainer.style.backgroundColor = "#ffffff";
-		newSkeleton.style.display = "none";
-	});
-	/*
-	option.addEventListener("mouseover", function(e){
-		imagesWrapper.style.display = "block";
-		//wrapper.style.zindex = "2";
-		hover = true;
-	});
-	*/
-	option.addEventListener("click", function(e){
-		imagesWrapper.style.display = "block";
-		genContainer.style.backgroundColor = "#aaaaaa";
-		loadImages( canvas, tree, imagesWrapper, genContainer );
-		//wrapper.style.zindex = "2";
-		hover = false;
-	});
-	/*
-	option.addEventListener("mouseout", function(e){
-		closeTab( imagesWrapper, hover );
-	});
-	*/
-	back.addEventListener("click", function(e){
-		imagesWrapper.style.display = "none";
-		genContainer.style.backgroundColor = "#ffffff";
-		//wrapper.style.zindex = "-1";
-	});
-	if ( canvasState == null ) {
-		newSkeleton.style.display = "block";
-	} else {
-		newSkeleton.style.display = "none";
-	}
-	
-	
+
+	rotate.addEventListener("click", function() {
+		//console.log( canvasState );
+		if ( canvasState.isRotating() )
+			canvasState.desactivateRotation();
+		else canvasState.activateRotation();
+	})
 }
+
+
+
 
 
 
