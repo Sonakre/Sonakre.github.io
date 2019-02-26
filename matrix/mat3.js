@@ -23,6 +23,15 @@
   out[8] = 1;
   return out;
 }
+function createVec() {
+  let out = new ARRAY_TYPE(3);
+  if(ARRAY_TYPE != Float32Array) {
+    out[0] = 0;
+    out[1] = 0;
+    out[2] = 0;
+  }
+  return out;
+}
 /**
  * Copies the upper-left 3x3 values into the given mat3.
  *

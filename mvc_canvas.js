@@ -27,7 +27,8 @@ function CanvasState( canvas, rotate ) {
 	this.canvas = canvas;
 	this.ctx = canvas.getContext("2d");
 	this.rotate = rotate;
-	this.trees = [];
+	//this.trees = [];
+	this.tree = null;
 	this.mouse = {x: 0, y: 0};
 	this.drag = false;
 
@@ -42,11 +43,12 @@ function CanvasState( canvas, rotate ) {
 		myState.mouseUp( e );
 	});
 
+/*
 	var node1 = new Node( 250, 250 );
 	/*
 	node1.translation.x = 250;
 	node1.translation.y = 250;
-	*/
+	
 	node1.localMatrix = [ 1, 0, 0, 0, 1, 0, node1.translation.x, node1.translation.y, 1 ];
 	node1.calculateGlobalMatrix();
 	var node2 = new Node( 300, 300 );
@@ -54,7 +56,7 @@ function CanvasState( canvas, rotate ) {
 
 	node1.addChild( node2 );
 	node2.addChild( node3 );
-
+*/
 
 
 
@@ -69,26 +71,29 @@ CanvasState.prototype.mouseUp = function( e ) {
 	var mouse = this.getMouse( e );
 
 	if ( mouse.x == this.mouse.x && mouse.y == this.mouse.y ) {
-		if ( !this.hasTree() ) {
-			var tree = new Tree();
-			tree.addRoot( mouse );
-			this.trees.push( tree );
+		var node = null;
+		if ( this.hasTree() ) {
+			//var tree = new Tree();
+			//tree.addRoot( mouse );
+			//this.tree = tree;
+			node = treeHasPoint( this.tree.root, this.mouse );
+		} 
+		if ( node == null ) {
+			if ( this.hasTree() ) this.tree.root.findSelected().addChild( mouse );
+			else {
+				var tree = new Tree();
+				tree.addRoot( mouse );
+				this.tree = tree;	
+			}
+			
 		} else {
-			var tree = null;
-			for ( var i = 0; i < this.trees.length; i++ ) {
-				if ( this.trees[i].selected ) tree = this.trees[i];
-			}
-			var node = treeHasPoint( tree.root, this.mouse );
-			if ( node != null ) {
-				tree.root.findSelected().selected = false;
-				node.selected = true;
-			} else {
-				tree.root.findSelected().addChild( mouse );
-			}
-
+			this.tree.root.findSelected().selected = false;
+			node.selected = true;
 		}
-
+	} else {
+		this.tree.root.findSelected().addChild( mouse );
 	}
+
 }
 
 Tree.prototype.addRoot = function( point ) {
@@ -108,11 +113,12 @@ Node.prototype.contains = function( point ) {
 Node.prototype.findSelected = function() {
 	if ( this.selected ) return this;
 
-	var tree = null;
+	var node = null;
+	
 	for ( var i = 0; i < this.children.length; i++ ) {
-		tree = this.children[i].findSelected();
+		node = this.children[i].findSelected();
 	}
-	return tree;
+	return node;	
 }
 
 function treeHasPoint( node, point ) {
@@ -121,31 +127,33 @@ function treeHasPoint( node, point ) {
 	if ( node.children.length == 0 ) {
 		return null;
 	}	
-
+	//var a = null;
 	for ( var i = 0; i < node.children.length; i++ ) {
-		treeHasPoint( node.children[i], point );
+		return treeHasPoint( node.children[i], point );
 	}
+	//return a;
 }
 
 CanvasState.prototype.mouseDown = function( e ) {
 	this.mouse = this.getMouse( e );
 	
 	if ( !this.hasTree() ) return;
-	
+	/*
 	var tree = null;
 	for ( var i = 0; i < this.trees.length; i++ ) {
 		if ( this.trees[i].selected ) tree = this.trees[i];
 	}
-	var node = treeHasPoint( tree.root, this.mouse );
+	*/
+	var node = treeHasPoint( this.tree.root, this.mouse );
 	if ( node == null ) return;
 
-	tree.root.findSelected().selected = false;
+	this.tree.root.findSelected().selected = false;
 	node.selected = true;
 	this.drag = true;
 }
 
 CanvasState.prototype.hasTree = function() {
-	if ( this.trees.length > 0 ) return true;
+	if ( this.tree != null ) return true;
 	else return false;
 }
 
@@ -213,26 +221,51 @@ Node.prototype.updateLocal = function() {
 	this.calculateLocalMatrix();
 }
 
+Node.prototype.updateGlobalPoint = function() {
+	//var a = [ this.translation.x, this.translation.y, 1 ];
+	//var b = createVec();
+
+	//transformMat3( b, a, this.globalMatrix );
+	this.translation.x = this.globalMatrix[6];
+	this.translation.y = this.globalMatrix[7]; 
+}
+
 Node.prototype.updateGlobal = function() {
 	this.calculateGlobalMatrix();
 
 	for ( var i = 0; i < this.children.length; i++ ) {
 		this.children[i].updateGlobal();
+		this.children[i].updateGlobalPoint();
 	}
 }
 
 function rotatePoint( point, origin, angle ) {
 //function rotatePoint( myState, node1, angle ) {
+	
 	var radians = angle * Math.PI / 180.0,
 	cos = Math.cos(radians),
 	sin = Math.sin(radians),
 	dX = point.translation.x - origin.translation.x,
 	dY = point.translation.y - origin.translation.y;
-	var dist = Math.sqrt( (dX) * (dX) + (dY) * (dY) );
+	//var dist = Math.sqrt( (dX) * (dX) + (dY) * (dY) );
 	point.translation.x = cos * dX - sin * dY + origin.translation.x;
 	point.translation.y = sin * dX + cos * dY + origin.translation.y;
-	point.rotation = Math.atan2( dX, -dY );
+	
+	var rad = origin.getRotation( point );
+	
+	point.rotation = rad;
 
+	
+
+/*
+	var radians = angle * Math.PI / 180.0;
+	var rotateMatrix = create();
+	var translationM = create();
+	fromRotation( rotateMatrix, radians );
+	point.rotation = radians;
+	translationM = [ 1, 0, 0, 0, 1, 0, point.distance * Math.cos( point.rotation ), point.distance * Math.sin( point.rotation ), 1 ];
+	multiply( point.localMatrix, translationM, rotateMatrix );
+*/
 	point.updateMatrices();
 	
 }
@@ -270,17 +303,18 @@ CanvasState.prototype.paint = function( trees ) {
 	var myState = this;
 
 	myState.ctx.clearRect( 0, 0, myState.canvas.width, myState.canvas.height );
-	for ( var i = 0; i < trees.length; i++ ) {
-		myState.paintSkeleton( trees[i].root );	
-	}
+	
+	if ( myState.tree != null )
+	myState.paintSkeleton( myState.tree.root );	
+	
 	 
 
 	var d = new Date();
 	
 	if ( myState.rotate ) {
-		for ( var i = 0; i < trees[0].root.children.length; i++ ) {
-			rotatePoint( trees[0].root.children[i], trees[0].root, d.getSeconds() / 10 );
-		}
+		//for ( var i = 0; i < trees[0].root.children.length; i++ ) {
+			rotatePoint( myState.tree.root.children[0], myState.tree.root, d.getSeconds()/ 10 );
+		//}
 		
 	}
 
@@ -315,7 +349,7 @@ CanvasState.prototype.paintNode = function( node ) {
   	//this.ctx.rotate( node.rotation );
   	this.ctx.strokeStyle = "#000000";
   	this.ctx.beginPath();
-  	this.ctx.rect(0, 0, 10, 10);
+  	this.ctx.rect(-5, -5, 10, 10);
   	this.ctx.stroke();
   	this.ctx.setTransform(1, 0, 0, 1, 0, 0);
 }
