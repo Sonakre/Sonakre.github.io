@@ -168,15 +168,34 @@ Node.prototype.calculateGlobalMatrix = function() {
 Node.prototype.calculateLocalMatrix = function() {
 	var translationM = create();
 	var rotationM = create();
-	translationM = [ 1, 0, 0, 0, 1, 0, this.distance * Math.cos( this.rotation ), this.distance * Math.sin( this.rotation ), 1 ];
+	//translationM = [ 1, 0, 0, 0, 1, 0, this.distance * Math.cos( this.rotation ), this.distance * Math.sin( this.rotation ), 1 ];
+	//rotationM = [ Math.cos( this.rotation ), Math.sin( this.rotation ), 0, - Math.sin( this.rotation ), Math.cos( this.rotation ), 0, 0, 0, 1 ];
+	translationM = [ 1, 0, 0, 0, 1, 0, this.translation.x, this.translation.y, 1 ];
 	rotationM = [ Math.cos( this.rotation ), Math.sin( this.rotation ), 0, - Math.sin( this.rotation ), Math.cos( this.rotation ), 0, 0, 0, 1 ];
 	multiply( this.localMatrix, translationM, rotationM );	
 }
 
 Node.prototype.addChild = function( point ) {
+	/*
 	this.selected = false;
-	var node = new Node( point.x, point.y );
 	var parent = this;
+	var node = new Node( point.x, point.y );
+	
+	var dist = parent.getDistance( node );
+	var rad = parent.getRotation( node );
+	node.distance = dist;
+	node.rotation = rad;
+	node.calculateLocalMatrix();
+	node.parent = parent;
+	parent.children.push( node );
+	node.calculateGlobalMatrix();
+	*/
+	this.selected = false;
+	var local = this.getPointinLocal( point );
+	var parent = this;
+
+	var node = new Node( local.x, local.y );
+
 	var dist = parent.getDistance( node );
 	var rad = parent.getRotation( node );
 	node.distance = dist;
@@ -187,22 +206,43 @@ Node.prototype.addChild = function( point ) {
 	node.calculateGlobalMatrix();
 }
 
+Node.prototype.getPointinLocal = function( point ) {
+	var inv = this.inverseGlobal();
+	var a = createVec();
+	var local = createVec();
+	a[0] = point.x;
+	a[1] = point.y;
+	a[2] = 1;
+	transformMat3( local, a, inv );
+	return {x: local[0], y: local[1]};
+}
+
+Node.prototype.inverseGlobal = function() {
+	var inv = create();
+	invert( inv, this.globalMatrix );
+	return inv;
+}
+
 Node.prototype.getDistance = function( node ) {
-	var dx = node.translation.x - this.translation.x;
-	var dy = node.translation.y - this.translation.y;
+	//var dx = node.translation.x - this.translation.x;
+	//var dy = node.translation.y - this.translation.y;
+	var dx = node.translation.x;
+	var dy = node.translation.y;
 	return Math.sqrt( (dx) * (dx) + (dy) * (dy) );
 }
 
 Node.prototype.getRotation = function( node ) {
-	var dx = node.translation.x - this.translation.x;
-	var dy = node.translation.y - this.translation.y;
+	//var dx = node.translation.x - this.translation.x;
+	//var dy = node.translation.y - this.translation.y;
+	var dx = node.translation.x;
+	var dy = node.translation.y;
 	var rad = Math.atan2( dy, dx );
 	node.orgRot = rad;
 	var angle = rad / Math.PI * 180.0;
 	var pangle = this.orgRot / Math.PI * 180.0;
-	var r = angle - pangle;
-	var rot = r * Math.PI / 180.0; 
-	return rot;
+	//var r = angle - pangle;
+	//var rot = r * Math.PI / 180.0; 
+	return rad;
 }
 
 
