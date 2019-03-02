@@ -14,8 +14,9 @@ function Node( px, py ) {
 	this.parent = null;
 	this.distance = null;
 	this.selected = true;
-	this.dim = 10;
+	this.dim = 20;
 	this.orgRot = 0;
+	this.image = null;
 }
 
 
@@ -31,6 +32,7 @@ function CanvasState( canvas, rotate ) {
 	this.tree = null;
 	this.mouse = {x: 0, y: 0};
 	this.drag = false;
+	this.imagesOn = false;
 
 	var myState = this;
 	
@@ -102,35 +104,44 @@ Tree.prototype.addRoot = function( point ) {
 	node.calculateGlobalMatrix();
 	this.root = node;
 }
-
+/*
 Node.prototype.contains = function( point ) {
 	return this.translation.x <= point.x && 
 			point.x <= this.translation.x + this.dim &&
             this.translation.y <= point.y && 
             point.y <= this.translation.y + this.dim;
 }
+*/
+Node.prototype.contains = function( point ) {
+	var local = this.getPointinLocal( point );
+  	var distsq = (local.x ) * (local.x) + (local.y) * (local.y);
+  	var rsq = this.dim * this.dim;
+
+  	return distsq < rsq;
+}
 
 Node.prototype.findSelected = function() {
 	if ( this.selected ) return this;
 
-	var node = null;
+	//var node = null;
 	
 	for ( var i = 0; i < this.children.length; i++ ) {
-		node = this.children[i].findSelected();
+		if ( this.children[i].findSelected() != null )//node = this.children[i].findSelected();
+		return this.children[i].findSelected();
 	}
-	return node;	
+	return null;
+	//return node;	
 }
 
 function treeHasPoint( node, point ) {
 	if ( node.contains( point ) ) return node;
-	
-	if ( node.children.length == 0 ) {
-		return null;
-	}	
+		
 	//var a = null;
 	for ( var i = 0; i < node.children.length; i++ ) {
-		return treeHasPoint( node.children[i], point );
+		if ( treeHasPoint( node.children[i], point ) != null )
+			return treeHasPoint( node.children[i], point );
 	}
+	return null;
 	//return a;
 }
 
@@ -238,19 +249,19 @@ Node.prototype.getRotation = function( node ) {
 	var dy = node.translation.y;
 	var rad = Math.atan2( dy, dx );
 	node.orgRot = rad;
-	var angle = rad / Math.PI * 180.0;
-	var pangle = this.orgRot / Math.PI * 180.0;
+	var angle = rad / Math.PI * 180.0 - 90;
+	var rot = angle * Math.PI / 180.0;
 	//var r = angle - pangle;
 	//var rot = r * Math.PI / 180.0; 
-	return rad;
+	return rot;
 }
-
+/*
 
 Node.prototype.translatePoint = function() {
 	this.translation.x = this.parent.translation.x + this.distance * Math.cos( this.rotation );
 	this.translation.y = this.parent.translation.y + this.distance * Math.sin( this.rotation );
 }
-
+*/
 
 Node.prototype.updateMatrices = function() {
 	this.updateLocal();
@@ -266,8 +277,8 @@ Node.prototype.updateGlobalPoint = function() {
 	//var b = createVec();
 
 	//transformMat3( b, a, this.globalMatrix );
-	this.translation.x = this.globalMatrix[6];
-	this.translation.y = this.globalMatrix[7]; 
+	this.translation.x = this.localMatrix[6];
+	this.translation.y = this.localMatrix[7]; 
 }
 
 Node.prototype.updateGlobal = function() {
@@ -285,11 +296,11 @@ function rotatePoint( point, origin, angle ) {
 	var radians = angle * Math.PI / 180.0,
 	cos = Math.cos(radians),
 	sin = Math.sin(radians),
-	dX = point.translation.x - origin.translation.x,
-	dY = point.translation.y - origin.translation.y;
+	dX = point.translation.x ,
+	dY = point.translation.y ;
 	//var dist = Math.sqrt( (dX) * (dX) + (dY) * (dY) );
-	point.translation.x = cos * dX - sin * dY + origin.translation.x;
-	point.translation.y = sin * dX + cos * dY + origin.translation.y;
+	point.translation.x = cos * dX - sin * dY ;
+	point.translation.y = sin * dX + cos * dY ;
 	
 	var rad = origin.getRotation( point );
 	
@@ -329,6 +340,7 @@ CanvasState.prototype.getMouse = function( e ) {
 }
 
 
+
 //View
 CanvasState.prototype.isRotating = function() {
 	return this.rotate;
@@ -339,22 +351,78 @@ CanvasState.prototype.activateRotation = function() {
 CanvasState.prototype.desactivateRotation = function() {
 	this.rotate = false;
 }
+CanvasState.prototype.isImagesOn = function() {
+	return this.imagesOn;
+}
+function loadAllImages() {
+	var images = [];
+	for ( var i = 1; i < 17; i++ ) {
+		images.push( loadImage( "image"+[i] ) );
+	}
+	return images;
+}
+function loadImage( imageName ) {
+	var image = new Image();
+	image.src = "character/" + imageName + ".png";
+	image.width = "50";
+	image.height = "100";
+	return image;
+}
+Node.prototype.putImageOnAllNodes = function( images ) {
+	this.image = images[0];
+	var count = 1;
+	//if ( node.children.length == 0 || images.length == 0) return;
+
+	for ( var i = 0; i < this.children.length; i++ ) {
+		//this.paintNode( node.children[i] );
+		this.children[i].putImage( images, count );
+	}
+}
+Node.prototype.putImage = function( images, count ) {
+	this.image = images[count];
+	count++;
+
+	if ( this.children.length == 0 || images.length == 0) return;
+	for ( var i = 0; i < this.children.length; i++ ) {
+		//this.paintNode( node.children[i] );
+		this.children[i].putImage( images, count );
+	}
+}
+CanvasState.prototype.putImagesOn = function() {
+	this.imagesOn = true;
+	var images = loadAllImages();
+
+	this.tree.root.putImageOnAllNodes( images );
+/*
+	this.tree.root.image = images[0];
+	for ( var i = 0; i < this.tree.root.children.length && i < images.length; i++ ) {
+		this.tree.root.children[0].image = images[i+1];
+	}
+*/
+	//this.tree.root.image = image;
+}
+CanvasState.prototype.putImagesOff = function() {
+	this.imagesOn = false;
+}
 CanvasState.prototype.paint = function( trees ) {
 	var myState = this;
 
 	myState.ctx.clearRect( 0, 0, myState.canvas.width, myState.canvas.height );
 	
-	if ( myState.tree != null )
-	myState.paintSkeleton( myState.tree.root );	
+	if ( myState.tree != null ) {
+		myState.paintSkeleton( myState.tree.root );	
+		if ( this.imagesOn )
+			myState.paintImages( myState.tree.root );
+	}
 	
 	 
 
 	var d = new Date();
 	
 	if ( myState.rotate ) {
-		//for ( var i = 0; i < trees[0].root.children.length; i++ ) {
-			rotatePoint( myState.tree.root.children[0], myState.tree.root, d.getSeconds()/ 10 );
-		//}
+		for ( var i = 0; i < myState.tree.root.children.length; i++ ) {
+			rotatePoint( myState.tree.root.children[i], myState.tree.root, d.getSeconds()/ 10 );
+		}
 		
 	}
 
@@ -370,6 +438,37 @@ CanvasState.prototype.paintSkeleton = function( node ) {
 		this.paintSkeleton( node.children[i] );
 	}
 	
+}
+CanvasState.prototype.paintImages = function( node ) {
+	if ( node.image != null )
+	this.paintImage( node );
+
+	if ( node.children.length == 0 ) return;
+
+	for ( var i = 0; i < node.children.length; i++ ) {
+		//this.paintNode( node.children[i] );
+		this.paintImages( node.children[i] );
+	}
+	
+}
+
+CanvasState.prototype.paintImage = function( node ) {
+/*
+	this.ctx.save();
+	this.ctx.translate( node.translation.x, node.translation.y );
+	this.ctx.rotate( node.rotation );
+	this.ctx.strokeStyle = "#000000";
+  	this.ctx.beginPath();
+  	this.ctx.rect(0, 0, 10, 10);
+  	this.ctx.stroke();
+  	this.ctx.restore();
+*/
+	var m = node.globalMatrix;
+	this.ctx.setTransform( m[0], m[1], m[3], m[4], m[6], m[7] );
+  	//this.ctx.setTransform( 1, 0, 0, 1, node.translation.x, node.translation.y );
+  	//this.ctx.rotate( node.rotation );
+  	this.ctx.drawImage( node.image, 0, 0, node.image.width, node.image.height );
+  	this.ctx.setTransform(1, 0, 0, 1, 0, 0);
 }
 
 CanvasState.prototype.paintNode = function( node ) {
@@ -391,6 +490,10 @@ CanvasState.prototype.paintNode = function( node ) {
   	this.ctx.beginPath();
   	this.ctx.rect(-5, -5, 10, 10);
   	this.ctx.stroke();
+  	this.ctx.strokeStyle = "#000000";
+  	this.ctx.beginPath();
+  	this.ctx.arc(0, 0, node.dim, 0, 2 * Math.PI);
+  	this.ctx.stroke();
   	this.ctx.setTransform(1, 0, 0, 1, 0, 0);
 }
 
@@ -410,14 +513,24 @@ function init() {
 	var canvasState = new CanvasState( canvas, false );
 	//canvasState.rotate = false;
 	var rotate = document.getElementById("rotate");
-
+	var images = document.getElementById("images");
 
 	rotate.addEventListener("click", function() {
 		//console.log( canvasState );
 		if ( canvasState.isRotating() )
 			canvasState.desactivateRotation();
 		else canvasState.activateRotation();
-	})
+		//console.log( canvasState.tree );
+	});
+
+	images.addEventListener("click", function() {
+		//console.log( canvasState );
+		if ( canvasState.isImagesOn() )
+			canvasState.putImagesOff();
+		else canvasState.putImagesOn();
+		console.log( canvasState.tree );
+	});
+
 }
 
 
