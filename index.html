@@ -6,109 +6,137 @@
 		<link rel="stylesheet" ype="text/css" href="index.css">
 	</head>
 	<body onload="init();">
-		<div class="wrapper" id="generalContainer">
-			
-			<div class="row" >
-				<div class="container" id="optionsWrapper">
-					<div class="option" id="rotate">
-						Rotate
+
+		<div class="wrapper">
+
+			<div class="container" id="generalContainer">
+
+				<div class="row" id="generalRow">
+
+					<div class="col-md-10" id="canvasSide">
+						<div id="imagesWrapper">
+							<div class="back" id="back">
+								x
+							</div>
+							<input type="file" onchange="previewFile()">
+							<!--
+							<div class="imageList">
+								<div class="imageElement" id="head">
+									head
+								</div>
+								<div class="imageElement" id="neck">
+									neck
+								</div>
+								<div class="imageElement" id="body">
+									body
+								</div>
+								<div class="imageElement" id="lower-body">
+									lower-body
+								</div>
+								<div class="imageElement" id="left-upper-arm">
+									left upper arm
+								</div>
+								<div class="imageElement" id="left-lower-arm">
+									left lower arm
+								</div>
+								<div class="imageElement" id="left-hand">
+									left hand
+								</div>
+								<div class="imageElement" id="right-upper-arm">
+									right upper arm
+								</div>
+								<div class="imageElement" id="right-lower-arm">
+									right lower arm
+								</div>
+								<div class="imageElement" id="right-hand">
+									right hand
+								</div>
+								<div class="imageElement" id="left-upper-leg">
+									left upper leg
+								</div>
+								<div class="imageElement" id="left-lower-leg">
+									left lower leg
+								</div>
+								<div class="imageElement" id="left-foot">
+									left foot
+								</div>
+								<div class="imageElement" id="right-upper-leg">
+									right upper leg
+								</div>
+								<div class="imageElement" id="right-lower-leg">
+									right lower leg
+								</div>
+								<div class="imageElement" id="right-foot">
+									right foot
+								</div>
+							</div>
+							-->
+						</div>
+
+						<div class="row">
+							<div class="canvasWrapper" id="canvasWrapper">
+								<canvas id="canvas"></canvas>
+							</div>
+						</div>
+						
+						<div class="row" id="timelineWrapper">
+							<div id="showTimeline">
+							</div>
+							<div class="timelineContainer" id="timelineContainer">
+								<div class="col-md-2" id="play-stop">
+								</div>
+								<div class="col-md-10" id="spriteContainer">
+									<canvas id="canvas2"></canvas>
+								</div>
+							</div>
+						</div>
+						
 					</div>
-					<div class="option" id="images">
-						Add Images
+
+					<div class="col-md-2" id="optionsSide">
+						<div class="row">
+							<div class="structure" id="characterStructure">
+								Character Structure
+							</div>
+						</div>
+						<div class="row" id="treeStructure">
+							<ul class="listNodes">
+							</ul>
+						</div>
+						<div class="row">
+							<div class="structure" id="characterImage">
+								<div class="structureOption" id="characterPutImage">
+									Add Image
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="structure" id="spriteStructure">
+								SpriteSheet
+							</div>
+						</div>
+						<div class="row" id="spriteStructureContainer">
+							<div class="structure">
+								<div class="structureOption" id="spriteOptionSavePose">
+									Save Sprite Position
+								</div>
+								<div class="structureOption" id="spriteOptionDownload">
+									Download SpriteSheet
+								</div>
+							</div>
+						</div>
 					</div>
-					<!--
-					<div class="option" id="first">
-						Choose images
-					</div>
-					-->
+
 				</div>
 
 			</div>
-			
-			<div class="container" id="wrapper">
-				<!--
-				<div id="new-skeleton">
-							Please select a new Skeleton
-					</div>
-				<div id="imagesWrapper">
-					<div class="back" id="back">
-						x
-					</div>
-					<div class="imageList">
-						<div class="imageElement" id="head">
-							head
-						</div>
-						<div class="imageElement" id="neck">
-							neck
-						</div>
-						<div class="imageElement" id="body">
-							body
-						</div>
-						<div class="imageElement" id="lower-body">
-							lower-body
-						</div>
-						<div class="imageElement" id="left-upper-arm">
-							left upper arm
-						</div>
-						<div class="imageElement" id="left-lower-arm">
-							left lower arm
-						</div>
-						<div class="imageElement" id="left-hand">
-							left hand
-						</div>
-						<div class="imageElement" id="right-upper-arm">
-							right upper arm
-						</div>
-						<div class="imageElement" id="right-lower-arm">
-							right lower arm
-						</div>
-						<div class="imageElement" id="right-hand">
-							right hand
-						</div>
-						<div class="imageElement" id="left-upper-leg">
-							left upper leg
-						</div>
-						<div class="imageElement" id="left-lower-leg">
-							left lower leg
-						</div>
-						<div class="imageElement" id="left-foot">
-							left foot
-						</div>
-						<div class="imageElement" id="right-upper-leg">
-							right upper leg
-						</div>
-						<div class="imageElement" id="right-lower-leg">
-							right lower leg
-						</div>
-						<div class="imageElement" id="right-foot">
-							right foot
-						</div>
-					</div>
-					<div class="imageList" style="display: none;" id="overlayPointLine">
-						<div class="back" id="backPointLine">
-							x
-						</div>
-						Put image on:
-						<div class="optionPointLine" id="onPoint">
-							Node
-						</div>
-						<div class="optionPointLine" id="onLine" style="display: none">
-							Branch
-						</div>
-					</div>
-				</div>
-			-->
-				<div class="canvasWrapper" id="canvasWrapper">
-					<canvas id="canvas"></canvas>
-				</div>
-				<div id="overlayContainer">
-					
-				</div>
-			</div>
+
 		</div>
+		<script type="text/javascript" src="matrix/common.js"></script>
+		<script type="text/javascript" src="matrix/mat3.js"></script>
+		<script type="text/javascript" src="matrix/vec3.js"></script>
+		<script type="text/javascript" src="data.js"></script>
+		<script type="text/javascript" src="canvas_functions.js"></script>
 
-	<script type="text/javascript" src="matrix/common.js"></script>
-	<script type="text/javascript" src="matrix/mat3.js"></script>
-	<script type="text/javascript" src="mvc_canvas.js"></script>
 	</body>
 </html>

@@ -8,7 +8,7 @@
  *
  * @returns {mat3} a new 3x3 matrix
  */
-/*export*/function create() {
+/*export*/function mat3create() {
   let out = new ARRAY_TYPE(9);
   if(ARRAY_TYPE != Float32Array) {
     out[1] = 0;
@@ -23,15 +23,6 @@
   out[8] = 1;
   return out;
 }
-function createVec() {
-  let out = new ARRAY_TYPE(3);
-  if(ARRAY_TYPE != Float32Array) {
-    out[0] = 0;
-    out[1] = 0;
-    out[2] = 0;
-  }
-  return out;
-}
 /**
  * Copies the upper-left 3x3 values into the given mat3.
  *
@@ -39,7 +30,7 @@ function createVec() {
  * @param {mat4} a   the source 4x4 matrix
  * @returns {mat3} out
  */
-/*export*/function fromMat4(out, a) {
+/*export*/function mat3fromMat4(out, a) {
   out[0] = a[0];
   out[1] = a[1];
   out[2] = a[2];
@@ -57,7 +48,7 @@ function createVec() {
  * @param {mat3} a matrix to clone
  * @returns {mat3} a new 3x3 matrix
  */
-/*export*/function clone(a) {
+/*export*/function mat3clone(a) {
   let out = new ARRAY_TYPE(9);
   out[0] = a[0];
   out[1] = a[1];
@@ -77,7 +68,7 @@ function createVec() {
  * @param {mat3} a the source matrix
  * @returns {mat3} out
  */
-/*export*/function copy(out, a) {
+/*export*/function mat3copy(out, a) {
   out[0] = a[0];
   out[1] = a[1];
   out[2] = a[2];
@@ -103,7 +94,7 @@ function createVec() {
  * @param {Number} m22 Component in column 2, row 2 position (index 8)
  * @returns {mat3} A new mat3
  */
-/*export*/ function fromValues(m00, m01, m02, m10, m11, m12, m20, m21, m22) {
+/*export*/ function mat3fromValues(m00, m01, m02, m10, m11, m12, m20, m21, m22) {
   let out = new ARRAY_TYPE(9);
   out[0] = m00;
   out[1] = m01;
@@ -131,7 +122,7 @@ function createVec() {
  * @param {Number} m22 Component in column 2, row 2 position (index 8)
  * @returns {mat3} out
  */
-/*export*/function set(out, m00, m01, m02, m10, m11, m12, m20, m21, m22) {
+/*export*/function mat3set(out, m00, m01, m02, m10, m11, m12, m20, m21, m22) {
   out[0] = m00;
   out[1] = m01;
   out[2] = m02;
@@ -149,7 +140,7 @@ function createVec() {
  * @param {mat3} out the receiving matrix
  * @returns {mat3} out
  */
-/*export*/function identity(out) {
+/*export*/function mat3identity(out) {
   out[0] = 1;
   out[1] = 0;
   out[2] = 0;
@@ -168,7 +159,7 @@ function createVec() {
  * @param {mat3} a the source matrix
  * @returns {mat3} out
  */
-/*export*/function transpose(out, a) {
+/*export*/function mat3transpose(out, a) {
   // If we are transposing ourselves we can skip a few steps but have to cache some values
   if (out === a) {
     let a01 = a[1], a02 = a[2], a12 = a[5];
@@ -198,7 +189,7 @@ function createVec() {
  * @param {mat3} a the source matrix
  * @returns {mat3} out
  */
-/*export*/function invert(out, a) {
+/*export*/function mat3invert(out, a) {
   let a00 = a[0], a01 = a[1], a02 = a[2];
   let a10 = a[3], a11 = a[4], a12 = a[5];
   let a20 = a[6], a21 = a[7], a22 = a[8];
@@ -229,7 +220,7 @@ function createVec() {
  * @param {mat3} a the source matrix
  * @returns {mat3} out
  */
-/*export*/function adjoint(out, a) {
+/*export*/function mat3adjoint(out, a) {
   let a00 = a[0], a01 = a[1], a02 = a[2];
   let a10 = a[3], a11 = a[4], a12 = a[5];
   let a20 = a[6], a21 = a[7], a22 = a[8];
@@ -250,7 +241,7 @@ function createVec() {
  * @param {mat3} a the source matrix
  * @returns {Number} determinant of a
  */
-/*export*/function determinant(a) {
+/*export*/function mat3determinant(a) {
   let a00 = a[0], a01 = a[1], a02 = a[2];
   let a10 = a[3], a11 = a[4], a12 = a[5];
   let a20 = a[6], a21 = a[7], a22 = a[8];
@@ -264,7 +255,7 @@ function createVec() {
  * @param {mat3} b the second operand
  * @returns {mat3} out
  */
-/*export*/function multiply(out, a, b) {
+/*export*/function mat3multiply(out, a, b) {
   let a00 = a[0], a01 = a[1], a02 = a[2];
   let a10 = a[3], a11 = a[4], a12 = a[5];
   let a20 = a[6], a21 = a[7], a22 = a[8];
@@ -290,7 +281,7 @@ function createVec() {
  * @param {vec2} v vector to translate by
  * @returns {mat3} out
  */
-/*export*/function translate(out, a, v) {
+/*export*/function mat3translate(out, a, v) {
   let a00 = a[0], a01 = a[1], a02 = a[2],
     a10 = a[3], a11 = a[4], a12 = a[5],
     a20 = a[6], a21 = a[7], a22 = a[8],
@@ -314,7 +305,7 @@ function createVec() {
  * @param {Number} rad the angle to rotate the matrix by
  * @returns {mat3} out
  */
-/*export*/function rotate(out, a, rad) {
+/*export*/function mat3rotate(out, a, rad) {
   let a00 = a[0], a01 = a[1], a02 = a[2],
     a10 = a[3], a11 = a[4], a12 = a[5],
     a20 = a[6], a21 = a[7], a22 = a[8],
@@ -339,7 +330,7 @@ function createVec() {
  * @param {vec2} v the vec2 to scale the matrix by
  * @returns {mat3} out
  **/
-/*export*/function scale(out, a, v) {
+/*export*/function mat3scale(out, a, v) {
   let x = v[0], y = v[1];
   out[0] = x * a[0];
   out[1] = x * a[1];
@@ -363,7 +354,7 @@ function createVec() {
  * @param {vec2} v Translation vector
  * @returns {mat3} out
  */
-/*export*/function fromTranslation(out, v) {
+/*export*/function mat3fromTranslation(out, v) {
   out[0] = 1;
   out[1] = 0;
   out[2] = 0;
@@ -386,7 +377,7 @@ function createVec() {
  * @param {Number} rad the angle to rotate the matrix by
  * @returns {mat3} out
  */
-/*export*/function fromRotation(out, rad) {
+/*export*/function mat3fromRotation(out, rad) {
   let s = Math.sin(rad), c = Math.cos(rad);
   out[0] = c;
   out[1] = s;
@@ -410,7 +401,7 @@ function createVec() {
  * @param {vec2} v Scaling vector
  * @returns {mat3} out
  */
-/*export*/function fromScaling(out, v) {
+/*export*/function mat3fromScaling(out, v) {
   out[0] = v[0];
   out[1] = 0;
   out[2] = 0;
@@ -429,7 +420,7 @@ function createVec() {
  * @param {mat2d} a the matrix to copy
  * @returns {mat3} out
  **/
-/*export*/function fromMat2d(out, a) {
+/*export*/function mat3fromMat2d(out, a) {
   out[0] = a[0];
   out[1] = a[1];
   out[2] = 0;
@@ -449,7 +440,7 @@ function createVec() {
 *
 * @returns {mat3} out
 */
-/*export*/function fromQuat(out, q) {
+/*export*/function mat3fromQuat(out, q) {
   let x = q[0], y = q[1], z = q[2], w = q[3];
   let x2 = x + x;
   let y2 = y + y;
@@ -482,7 +473,7 @@ function createVec() {
 *
 * @returns {mat3} out
 */
-/*export*/function normalFromMat4(out, a) {
+/*export*/function mat3normalFromMat4(out, a) {
   let a00 = a[0], a01 = a[1], a02 = a[2], a03 = a[3];
   let a10 = a[4], a11 = a[5], a12 = a[6], a13 = a[7];
   let a20 = a[8], a21 = a[9], a22 = a[10], a23 = a[11];
@@ -524,7 +515,7 @@ function createVec() {
  * @param {number} height Height of gl context
  * @returns {mat3} out
  */
-/*export*/function projection(out, width, height) {
+/*export*/function mat3projection(out, width, height) {
     out[0] = 2 / width;
     out[1] = 0;
     out[2] = 0;
@@ -542,7 +533,7 @@ function createVec() {
  * @param {mat3} a matrix to represent as a string
  * @returns {String} string representation of the matrix
  */
-/*export*/function str(a) {
+/*export*/function mat3str(a) {
   return 'mat3(' + a[0] + ', ' + a[1] + ', ' + a[2] + ', ' +
           a[3] + ', ' + a[4] + ', ' + a[5] + ', ' +
           a[6] + ', ' + a[7] + ', ' + a[8] + ')';
@@ -553,7 +544,7 @@ function createVec() {
  * @param {mat3} a the matrix to calculate Frobenius norm of
  * @returns {Number} Frobenius norm
  */
-/*export*/function frob(a) {
+/*export*/function mat3frob(a) {
   return(Math.sqrt(Math.pow(a[0], 2) + Math.pow(a[1], 2) + Math.pow(a[2], 2) + Math.pow(a[3], 2) + Math.pow(a[4], 2) + Math.pow(a[5], 2) + Math.pow(a[6], 2) + Math.pow(a[7], 2) + Math.pow(a[8], 2)))
 }
 /**
@@ -564,7 +555,7 @@ function createVec() {
  * @param {mat3} b the second operand
  * @returns {mat3} out
  */
-/*export*/function add(out, a, b) {
+/*export*/function mat3add(out, a, b) {
   out[0] = a[0] + b[0];
   out[1] = a[1] + b[1];
   out[2] = a[2] + b[2];
@@ -584,7 +575,7 @@ function createVec() {
  * @param {mat3} b the second operand
  * @returns {mat3} out
  */
-/*export*/function subtract(out, a, b) {
+/*export*/function mat3subtract(out, a, b) {
   out[0] = a[0] - b[0];
   out[1] = a[1] - b[1];
   out[2] = a[2] - b[2];
@@ -604,7 +595,7 @@ function createVec() {
  * @param {Number} b amount to scale the matrix's elements by
  * @returns {mat3} out
  */
-/*export*/function multiplyScalar(out, a, b) {
+/*export*/function mat3multiplyScalar(out, a, b) {
   out[0] = a[0] * b;
   out[1] = a[1] * b;
   out[2] = a[2] * b;
@@ -625,7 +616,7 @@ function createVec() {
  * @param {Number} scale the amount to scale b's elements by before adding
  * @returns {mat3} out
  */
-/*export*/function multiplyScalarAndAdd(out, a, b, scale) {
+/*export*/function mat3multiplyScalarAndAdd(out, a, b, scale) {
   out[0] = a[0] + (b[0] * scale);
   out[1] = a[1] + (b[1] * scale);
   out[2] = a[2] + (b[2] * scale);
@@ -644,7 +635,7 @@ function createVec() {
  * @param {mat3} b The second matrix.
  * @returns {Boolean} True if the matrices are equal, false otherwise.
  */
-/*export*/function exactEquals(a, b) {
+/*export*/function mat3exactEquals(a, b) {
   return a[0] === b[0] && a[1] === b[1] && a[2] === b[2] &&
          a[3] === b[3] && a[4] === b[4] && a[5] === b[5] &&
          a[6] === b[6] && a[7] === b[7] && a[8] === b[8];
@@ -656,7 +647,7 @@ function createVec() {
  * @param {mat3} b The second matrix.
  * @returns {Boolean} True if the matrices are equal, false otherwise.
  */
-/*export*/function equals(a, b) {
+/*export*/function mat3equals(a, b) {
   let a0 = a[0], a1 = a[1], a2 = a[2], a3 = a[3], a4 = a[4], a5 = a[5], a6 = a[6], a7 = a[7], a8 = a[8];
   let b0 = b[0], b1 = b[1], b2 = b[2], b3 = b[3], b4 = b[4], b5 = b[5], b6 = b[6], b7 = b[7], b8 = b[8];
   return (Math.abs(a0 - b0) <= EPSILON*Math.max(1.0, Math.abs(a0), Math.abs(b0)) &&
@@ -669,29 +660,14 @@ function createVec() {
           Math.abs(a7 - b7) <= EPSILON*Math.max(1.0, Math.abs(a7), Math.abs(b7)) &&
           Math.abs(a8 - b8) <= EPSILON*Math.max(1.0, Math.abs(a8), Math.abs(b8)));
 }
-/*
-function transformMat3(out, a, m) {
-  let x = a[0], y = a[1], z = a[2];
-  out[0] = x * m[0] + y * m[3] + z * m[6];
-  out[1] = x * m[1] + y * m[4] + z * m[7];
-  out[2] = x * m[2] + y * m[5] + z * m[8];
-  return out;
-}
-*/
-function transformMat3(out, a, m) {
-  var x = a[0],
-    y = a[1];
-  out[0] = m[0] * x + m[3] * y + m[6];
-  out[1] = m[1] * x + m[4] * y + m[7];
-  return out;
-}
+
 /**
  * Alias for {@link mat3.multiply}
  * @function
  */
-/*export*/const mul = multiply;
+/*export*/const mat3mul = mat3multiply;
 /**
  * Alias for {@link mat3.subtract}
  * @function
  */
-/*export*/const sub = subtract;
+/*export*/const mat3sub = mat3subtract;
