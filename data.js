@@ -18,8 +18,8 @@ function Node( px, py ) {
 	this.name = "";
 }
 
-function SceneImage() {
-	this.img = new Image();
+function SceneImage( img ) {
+	this.img = img || new Image();
 	this.translation = createVector( 0, 0, 1 );
 	this.rotation = 0;
 	this.scale = 0;
@@ -43,6 +43,17 @@ function TransformImage( img ) {
 	this.rotateP.selected = false;
 	this.radius = 10;
 	this.img = img;
+}
+
+SceneImage.prototype.updateImageVertices = function() {
+	this.transform.updatePoints();
+}
+
+TransformImage.prototype.updatePoints = function() {
+	this.p1[0] = this.img.translation[0], this.p1[1] = this.img.translation[1];
+	this.p2[0] = this.img.translation[0] + this.img.img.width, this.p2[1] = this.img.translation[1];
+	this.p3[0] = this.img.translation[0], this.p3[1] = this.img.translation[1] + this.img.img.height;
+	this.p4[0] = this.img.translation[0] + this.img.img.width, this.p4[1] = this.img.translation[1] + this.img.img.height;
 }
 
 function createVector( x, y, z ) {
@@ -144,6 +155,23 @@ Node.prototype.findSelected = function() {
 	//return node;	
 }
 
+Node.prototype.findSelectedImage = function() {
+	if ( this.images.length > 0 ) {
+		for ( var i = 0; i < this.images.length; i++ ) {
+			if ( this.images[i].selected ) return this.images[i];
+		}
+	}
+	
+
+	//var node = null;
+	
+	for ( var i = 0; i < this.children.length; i++ ) {
+		if ( this.children[i].findSelectedImage() != null )//node = this.children[i].findSelected();
+		return this.children[i].findSelectedImage();
+	}
+	return null;
+}
+
 Node.prototype.countNodes = function( counter ) {
 	if ( this.children.length == 0 ) return counter+1;
 
@@ -239,6 +267,36 @@ Node.prototype.calculateLocalMatrix = function() {
 	rotationM = [ Math.cos( this.rotation ), Math.sin( this.rotation ), 0, - Math.sin( this.rotation ), Math.cos( this.rotation ), 0, 0, 0, 1 ];
 	mat3multiply( this.localMatrix, translationM, rotationM );	
 }
+/*
+function SceneImage( img ) {
+	this.img = img || new Image();
+	this.translation = createVector( 0, 0, 1 );
+	this.rotation = 0;
+	this.scale = 0;
+	this.localMatrix = mat3create();
+	this.selected = true;
+	this.transform = new TransformImage( this );
+	this.parent = null;
+	this.name = "";
+}
+*/
+
+SceneImage.prototype.calculateLocalMatrix = function() {
+	var translationM = mat3create();
+	var rotationM = mat3create();
+	translationM = [ 1, 0, 0, 0, 1, 0, this.translation[0], this.translation[1], this.translation[2] ];
+	rotationM = [ Math.cos( this.rotation ), Math.sin( this.rotation ), 0, - Math.sin( this.rotation ), Math.cos( this.rotation ), 0, 0, 0, 1 ];
+	mat3multiply( this.localMatrix, translationM, rotationM );	
+}
+/*
+SceneImage.prototype.calculateGlobalMatrix = function() {
+	if ( this.parent == null ) {
+		this.globalMatrix = this.localMatrix;
+	} else {
+		mat3multiply( this.globalMatrix, this.parent.globalMatrix, this.localMatrix );
+	}
+}
+*/
 
 Node.prototype.addChild = function( point, counter ) {
 	counter = counter + 1;
@@ -277,7 +335,7 @@ Node.prototype.getPointinGlobal = function( point ) {
 	//a[0] = point.x;
 	//a[1] = point.y;
 	//a[2] = 1;
-	transformMat3( globalPoint, point, this.globalMatrix );
+	vec3transformMat3( globalPoint, point, this.globalMatrix );
 	return globalPoint;
 }
 
@@ -307,6 +365,15 @@ Node.prototype.getRotation = function( node ) {
 	//var r = angle - pangle;
 	//var rot = r * Math.PI / 180.0; 
 	return rot;
+}
+
+SceneImage.prototype.updateMatrices = function( dist ) {
+	this.updateLocal( dist );
+}
+
+SceneImage.prototype.updateLocal = function( dist ) {
+	this.calculateLocalMatrix();
+	this.updateImageVertices();
 }
 
 Node.prototype.updateMatrices = function() {
@@ -345,10 +412,10 @@ Node.prototype.rotatePoint = function( local ) {
 	var rad = Math.atan2( dy, dx );
 	//node.orgRot = rad;
 	var angle = rad / Math.PI * 180.0;
-	var radians = angle * Math.PI / 180.0,
+	var radians = (angle - 90) * Math.PI / 180.0,
 	//var radians = angle,
-	cos = Math.cos(radians),
-	sin = Math.sin(radians);
+	cos = Math.cos(rad),
+	sin = Math.sin(rad);
 	/*
 	dX = this.translation[0] ,
 	dY = this.translation[1] ;
@@ -385,10 +452,10 @@ SceneImage.prototype.containsPoint = function( point ) {
 	var point3 = this.transform.p3;
 	var point4 = this.transform.p4;
 
-	var gp1 = this.getPointinGlobal( point1 );
-	var gp2 = this.getPointinGlobal( point2 );
-	var gp3 = this.getPointinGlobal( point3 );
-	var gp4 = this.getPointinGlobal( point4 );
+	var gp1 = this.parent.getPointinGlobal( point1 );
+	var gp2 = this.parent.getPointinGlobal( point2 );
+	var gp3 = this.parent.getPointinGlobal( point3 );
+	var gp4 = this.parent.getPointinGlobal( point4 );
 
 	var maxX = Math.max( gp1[0], gp2[0], gp3[0], gp4[0] );
 	var maxY = Math.max( gp1[1], gp2[1], gp3[1], gp4[1] );

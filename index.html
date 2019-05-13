@@ -14,68 +14,30 @@
 				<div class="row" id="generalRow">
 
 					<div class="col-md-10" id="canvasSide">
+						
 						<div id="imagesWrapper">
 							<div class="back" id="back">
 								x
 							</div>
-							<input type="file" onchange="previewFile()">
-							<!--
-							<div class="imageList">
-								<div class="imageElement" id="head">
-									head
-								</div>
-								<div class="imageElement" id="neck">
-									neck
-								</div>
-								<div class="imageElement" id="body">
-									body
-								</div>
-								<div class="imageElement" id="lower-body">
-									lower-body
-								</div>
-								<div class="imageElement" id="left-upper-arm">
-									left upper arm
-								</div>
-								<div class="imageElement" id="left-lower-arm">
-									left lower arm
-								</div>
-								<div class="imageElement" id="left-hand">
-									left hand
-								</div>
-								<div class="imageElement" id="right-upper-arm">
-									right upper arm
-								</div>
-								<div class="imageElement" id="right-lower-arm">
-									right lower arm
-								</div>
-								<div class="imageElement" id="right-hand">
-									right hand
-								</div>
-								<div class="imageElement" id="left-upper-leg">
-									left upper leg
-								</div>
-								<div class="imageElement" id="left-lower-leg">
-									left lower leg
-								</div>
-								<div class="imageElement" id="left-foot">
-									left foot
-								</div>
-								<div class="imageElement" id="right-upper-leg">
-									right upper leg
-								</div>
-								<div class="imageElement" id="right-lower-leg">
-									right lower leg
-								</div>
-								<div class="imageElement" id="right-foot">
-									right foot
-								</div>
+							<div class="imageList" id="imageList">
+								
 							</div>
-							-->
+							
 						</div>
-
-						<div class="row">
+						<div class="row" id="canvasPosition">
+							<div class="" id="optionsTop">
+								<div class="optionsTopItems" id="rotate">
+									Rotate Point
+								</div>
+								<div class="optionsTopItems" id="translate">
+									Translate Point
+								</div>
+								<div class="optionsTopItems"></div>
+								<div class="optionsTopItems"></div>
+							</div>
 							<div class="canvasWrapper" id="canvasWrapper">
 								<canvas id="canvas"></canvas>
+								<canvas id="animation"></canvas>
 							</div>
 						</div>
 						
@@ -104,9 +66,18 @@
 							</ul>
 						</div>
 						<div class="row">
-							<div class="structure" id="characterImage">
-								<div class="structureOption" id="characterPutImage">
+							<div class="structure" id="imageStructure">
+								Images
+							</div>
+						</div>
+						<div class="row" id="characterImage">
+							<div class="structure">
+								<input type="file" class="structureOption" id="characterPutImage">
+								<label for="characterPutImage">
 									Add Image
+								</label>
+								<div class="structureOption" id="collectionImages">
+									Collection
 								</div>
 							</div>
 						</div>

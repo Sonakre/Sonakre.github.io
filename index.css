@@ -29,7 +29,13 @@ ul {
 	height: 100%;
 }
 
+#canvasWrapper #animation {
+	position: absolute;
+	display: none;
+}
+
 #canvasSide #imagesWrapper {
+	display: none;
 	position: absolute;
 	height: 400px;
 	width: 400px; 
@@ -61,11 +67,28 @@ ul {
 	/*flex: 1;*/
 }
 
-#canvasSide .canvasWrapper {
+#canvasSide .canvasWrapper, #canvasSide #optionsTop {
 	border: 1px solid #0000ff;
 	margin: 10px;
 	display: flex;
+	margin-top: 30px;
+}
+
+#canvasSide .canvasWrapper {
 	flex: 1;
+}
+
+#canvasSide #optionsTop {
+	height: 30px;
+	position: absolute;
+	margin : 0;
+	width: -webkit-fill-available;
+}
+
+#canvasSide #optionsTop .optionsTopItems {
+	padding-left: 10px;
+	padding-right: 10px;
+	border: 1px solid #0000ff;
 }
 
 #canvasSide #showTimeline {
@@ -154,11 +177,22 @@ ul {
 }
 
 #optionsSide #spriteStructureContainer .structureOption,
-#optionsSide #characterImage .structureOption {
+#optionsSide #characterImage .structureOption,
+#optionsSide #characterImage #characterPutImage + label {
 	border: 1px solid #0000ff;
 	font-size: 14px;
 	margin-bottom: 10px;
+	display: block;
 }
-#optionsSide #characterImage .structureOption {
+#optionsSide #characterImage .structureOption:last-of-type {
 	margin-bottom: 0;
+}
+
+#optionsSide #characterImage #characterPutImage {
+	width: 0.1px;
+	height: 0.1px;
+	opacity: 0;
+	overflow: hidden;
+	position: absolute;
+	z-index: -1;
 }

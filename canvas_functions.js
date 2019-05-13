@@ -92,6 +92,18 @@ function draggingPoint( myState, e ) {
 }
 
 function draggingImage( myState, e ) {
+	var mouse = myState.getMouse( e );
+	var n = myState.tree.root.findSelectedImage();
+	if ( n.parent != null )
+		var local = n.parent.getPointinLocal( mouse );
+	else var local = createVector( mouse[0], mouse[1], 1 );
+	n.translation[0] = local[0] - n.img.width/2;
+	n.translation[1] = local[1] - n.img.height/2;
+	if ( n.parent != null )
+		var dist = n.parent.getDistance( n );
+	else var dist = Math.sqrt( (n.translation.x) * (n.translation.x) + (n.translation.y) * (n.translation.y) );
+	//var rad = n.parent.getRotation( n );
+	n.updateMatrices( dist );
 
 }
 
@@ -154,7 +166,7 @@ function mouseDown( myState, e ) {
 		a.selected = true;
 	}
 	else if ( b != null ) {
-		myState.tree.root.findSelected().selected = false;
+		myState.tree.root.findSelectedImage().selected = false;
 		b.selected = true;
 	}
 	else if ( c != null ) {
@@ -229,7 +241,9 @@ CanvasState.prototype.paint = function( tree ) {
 	myState.ctx.clearRect( 0, 0, myState.canvas.width, myState.canvas.height );
 	
 	if ( myState.tree != null ) {
+		myState.paintImages( myState.tree.root );
 		myState.paintSkeleton( myState.tree.root );	
+		
 		/*if ( this.imagesOn )
 			myState.paintImages( myState.tree.root );
 			*/
@@ -253,8 +267,7 @@ CanvasState.prototype.paintSkeleton = function( node ) {
 CanvasState.prototype.paintNode = function( node ) {
 	var m = node.globalMatrix;
 	this.ctx.setTransform( m[0], m[1], m[3], m[4], m[6], m[7] );
-  	//this.ctx.setTransform( 1, 0, 0, 1, node.translation.x, node.translation.y );
-  	//this.ctx.rotate( node.rotation );
+
   	if ( node.selected )
   		this.ctx.strokeStyle = "#ff0000";
   	else
@@ -268,6 +281,34 @@ CanvasState.prototype.paintNode = function( node ) {
   		this.ctx.strokeStyle = "#000000";
   	this.ctx.beginPath();
   	this.ctx.arc(0, 0, node.dim, 0, 2 * Math.PI);
+  	this.ctx.stroke();
+  	this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+}
+CanvasState.prototype.paintImages = function( node ) {
+	if ( node.images.length > 0 ) {
+		for ( var i = 0; i < node.images.length; i++ ) {
+			this.paintImage( node, node.images[i] );	
+		}
+	}
+
+	if ( node.children.length == 0 ) return;
+
+	for ( var i = 0; i < node.children.length; i++ ) {
+		this.paintImages( node.children[i] );
+	}
+	
+}
+
+CanvasState.prototype.paintImage = function( node, image ) {
+	var m = node.globalMatrix;
+	this.ctx.setTransform( m[0], m[1], m[3], m[4], m[6], m[7] );
+  	//this.ctx.setTransform( 1, 0, 0, 1, node.translation.x, node.translation.y );
+  	//this.ctx.rotate( node.rotation );
+  	//this.ctx.drawImage( node.image, node.image.style.x, node.image.style.y, node.image.width, node.image.height );
+  	this.ctx.drawImage( image.img, image.translation[0], image.translation[1], image.img.width, image.img.height );
+  	this.ctx.strokeStyle = "#ff0000";
+  	this.ctx.beginPath();
+  	this.ctx.rect( image.translation[0], image.translation[1], image.img.width, image.img.height );
   	this.ctx.stroke();
   	this.ctx.setTransform(1, 0, 0, 1, 0, 0);
 }
@@ -304,7 +345,6 @@ CanvasState.prototype.loadSpriteImage = function( spriteImage ) {
 function SpriteSheet( bool, canvas ) {
 	this.flagDownload = bool;
 	this.newLine = false;
-
 	this.height = 0;
 	this.width = 0;
 	this.origin = createVector( 0, 0, 1 );
@@ -313,6 +353,15 @@ function SpriteSheet( bool, canvas ) {
 	this.ctx = canvas.getContext("2d");
 	this.scaleConstant = 1;
 	this.counter = 0;
+
+
+	this.frameHeight = 0;
+	this.frameWidth = 0;
+	this.frameIndex = 0;
+	this.numberOfFrames = 0;
+	this.tickCount = 0;
+	this.ticksPerFrame = 4; //15 fps
+	this.loop = true;
 }
 
 SpriteSheet.prototype.recalculateHeight = function( spriteToCanvas ) {
@@ -338,7 +387,10 @@ SpriteSheet.prototype.recalculateWidth = function( spriteToCanvas ) {
 
 SpriteSheet.prototype.calculateHeight = function( spriteToCanvas ) {
 	console.log(spriteToCanvas.height);
-	if ( this.flagDownload ) this.height = spriteToCanvas.height;
+	if ( this.flagDownload ) {
+		this.height = spriteToCanvas.height;
+		this.frameHeight = spriteToCanvas.height;
+	}
 	else this.height = spriteToCanvas.height * this.scaleConstant;
 
 	this.canvas.height = this.height;
@@ -346,13 +398,14 @@ SpriteSheet.prototype.calculateHeight = function( spriteToCanvas ) {
 
 SpriteSheet.prototype.calculateWidth = function( spriteToCanvas ) {
 	console.log(spriteToCanvas.width);
-	if ( this.flagDownload ) this.width = spriteToCanvas.width;
+	if ( this.flagDownload ) {
+		this.width = spriteToCanvas.width;
+		this.frameWidth = spriteToCanvas.width;
+	}
 	else this.width = spriteToCanvas.width * this.scaleConstant * 4; //el 4 és una constant que pot variar, de moment es queda així hardcoded
 
 	this.canvas.width = this.width;
 }
-
-
 
 SpriteSheet.prototype.saveImageInSpriteSheet = function( spriteToCanvas ) {
 	var addedWidth = spriteToCanvas.width ;
@@ -383,10 +436,12 @@ function saveSpriteSheet( canvasState, spriteSheetToShow, spriteSheetToDownload 
 	spriteSheetToShow.ctx.scale( spriteSheetToShow.scaleConstant, spriteSheetToShow.scaleConstant );
 	spriteSheetToShow.saveImageInSpriteSheet( spriteToCanvas );
 	spriteSheetToShow.ctx.restore();
+	spriteSheetToShow.numberOfFrames += 1;
 
 	spriteSheetToDownload.ctx.save();
 	spriteSheetToDownload.saveImageInSpriteSheet( spriteToCanvas );
 	spriteSheetToDownload.ctx.restore();
+	spriteSheetToDownload.numberOfFrames += 1;
 
 	return [spriteSheetToShow, spriteSheetToDownload];
 }
@@ -401,7 +456,6 @@ function getImageFromCanvas( canvasState ) {
 
 	return spriteToCanvas;
 }
-
 
 
 function createStateSprite( canvasState ) {
@@ -440,25 +494,102 @@ function addImagesToElements( elements ) {
   	}
 };
 
-function previewFile() {
-	var reader  = new FileReader();
+function previewFile(e) {
+	//var reader  = new FileReader();
 	var img = document.createElement("img");
 	var file    = document.querySelector('input[type=file]').files[0];
 	img.height = 200;
 	img.width = 200;
-	reader.onloadend = function () {
-           img.src = reader.result;
-       }
+	var reader = new FileReader();
 
-       if (file) {
-           reader.readAsDataURL(file); //reads the data as a URL
-       } else {
-           img.src = "";
-       }
-    var parent = document.querySelector("input[type=file]").parentElement;
+    reader.onload = function(event){
+        var image = new Image();
+        image.onload = function(){
+            addImageToNode( image );
+        }
+        image.src = event.target.result;
+        img.src = image.src;
+    }
+    if (file) {
+        reader.readAsDataURL(file); //reads the data as a URL
+    } else {
+        image.src = "";
+        img.src = image.src;
+    }
+      
+    var parent = document.getElementById("imageList");
 	console.log(parent);
     parent.appendChild(img);
+
 }
+
+function addImageToNode( image ) {
+	var selectedNode = canvasState.tree.root.findSelected();
+	var img = new SceneImage( image );
+	img.scale = 0.25;
+	img.img.width = image.width * img.scale;
+	img.img.height = image.height * img.scale;
+	img.translation[0] = -image.width / 2;
+	img.translation[1] = -image.height / 2;
+	img.img.style.x = 0;
+	img.img.style.y = 0;
+	img.parent = selectedNode;
+	img.calculateLocalMatrix();
+	img.updateImageVertices();
+	selectedNode.images.push( img );
+/*
+	console.log(selectedNode.images[0].img);
+	console.log(img.img.src);
+
+	canvasState.ctx.drawImage(selectedNode.images[0].img,selectedNode.images[0].translation[0],selectedNode.images[0].translation[1], selectedNode.images[0].img.width, selectedNode.images[0].img.height );
+*/
+}
+
+function animateSprite( canvasAnimate, spritesheet, ctx ) {
+	//canvasState.ctx.requestAnimationFrame( animateSprite );
+	
+	
+	updateAnimationSprite( canvasAnimate, spritesheet );
+	renderSprite( canvasAnimate, spritesheet, ctx );
+	requestAnimationFrame( function() { animateSprite( canvasAnimate, spritesheet, ctx ) } );
+	/*if ( !start_stop ) {
+		cancelAnimationFrame( id );
+		//id = undefined;
+	}
+	*/
+}
+
+function renderSprite( canvasAnimate, spritesheet, ctx ) {	
+	ctx.clearRect(0, 0, spritesheet.frameWidth, spritesheet.frameHeight);
+
+	ctx.drawImage(spritesheet.canvas, 
+	spritesheet.frameIndex * spritesheet.frameWidth,
+	0, 
+	spritesheet.width,
+	spritesheet.height,
+	0,
+	0,
+	spritesheet.width,
+	spritesheet.height
+	);
+}
+
+function updateAnimationSprite( canvasAnimate, spritesheet ) {
+	spritesheet.tickCount += 1;
+			
+    if (spritesheet.tickCount > spritesheet.ticksPerFrame) {
+    	spritesheet.tickCount = 0;
+    	
+    	if (spritesheet.frameIndex < spritesheet.numberOfFrames) {	
+            spritesheet.frameIndex += 1;
+        } else if (spritesheet.loop) {
+            spritesheet.frameIndex = 0;
+        }
+        //spritesheet.frameIndex += 1; 
+    }
+}
+
+var canvasState;
 
 //init
 function init() {
@@ -468,7 +599,7 @@ function init() {
 	canvas.width = wrapper.offsetWidth;
 	//var node1 = new Node();
 	//var canvasState = new CanvasState( canvas, node1 );
-	var canvasState = new CanvasState( canvas, false );
+	canvasState = new CanvasState( canvas, false );
 	//canvasState.rotate = false;
 	var rotate = document.getElementById("rotate");
 	var translate = document.getElementById("translate");
@@ -517,6 +648,19 @@ function init() {
 		}
 	});
 
+	var imageStructure = document.getElementById("imageStructure");
+	var characterImage = document.getElementById("characterImage");
+
+	imageStructure.addEventListener("click", function() {
+		if ( characterImage.style.display == "none" ) {
+			characterImage.style.display = "flex";
+			treeStructure.style.maxHeight = "50%";
+		} else {
+			characterImage.style.display = "none";
+			treeStructure.style.maxHeight = "inherit";
+		}
+	});
+
 	var timelineContainer = document.getElementById("timelineContainer");
 	var showTimeline = document.getElementById("showTimeline");
 
@@ -534,7 +678,37 @@ function init() {
 
 	addImagesToElements( imageListElements );
 
-	/*
+	var imageLoader = document.getElementById('characterPutImage');
+    imageLoader.addEventListener('change', previewFile, false);
+
+    var play_stop = document.getElementById('play-stop');
+    var canvasAnimate = document.getElementById("animation");
+	var ctx = canvasAnimate.getContext("2d");
+    canvasAnimate.height = canvas.height;
+    canvasAnimate.width = canvas.width;
+    var visited = false;
+
+    play_stop.addEventListener("click", function() {
+    	if ( canvas.style.display == "none" ) {
+    		start_stop = false;
+    		canvas.style.display = "block";
+    		canvasAnimate.style.display = "none";
+    	} else {
+    		start_stop = true;
+    		canvasAnimate.style.display = "block";
+    		canvas.style.display = "none";
+    		if ( !visited ) {
+    			animateSprite( canvasAnimate, spriteSheetDownload, ctx );
+    			visited = true;
+    		}
+    	}
+    	
+    });
+
+    var rotate = document.getElementById("rotate");
+	var translate = document.getElementById("translate");
+
+	
 	rotate.addEventListener("click", function() {
 		//console.log( canvasState );
 		if ( canvasState.isRotating() )
@@ -551,6 +725,15 @@ function init() {
 		//console.log( canvasState.tree );
 	});
 
+	var collectionImages = document.getElementById("collectionImages");
+	var imagesWrapper = document.getElementById("imagesWrapper");
+	
+	collectionImages.addEventListener("click", function() {
+		if ( imagesWrapper.style.display == "none")
+			imagesWrapper.style.display = "block";
+		else imagesWrapper.style.display = "none";
+	});
+/*
 	images.addEventListener("click", function() {
 		//console.log( canvasState );
 		if ( canvasState.isImagesOn() )
