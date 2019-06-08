@@ -23,15 +23,39 @@ ul {
 }	
 
 #canvasSide {
-	border: 1px solid #ff0000;
+	background-color: #919b97;
 	display: flex;
 	flex-direction: column;
 	height: 100%;
 }
-
-#canvasWrapper #animation {
+/*
+#canvasWrapper #canvas {
+	display: none;
+}
+*/
+#canvasWrapper #previewCanvas {
 	position: absolute;
 	display: none;
+	max-height: 400px;
+	max-width: 400px;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	margin: auto;
+	border: 5px solid #f4d44c;
+	box-shadow: 0px 0px 90px 0px rgba(0,0,0,0.2);
+}
+
+#canvasWrapper #previewCanvas #backPreview {
+	position: absolute;
+	right: 0;
+	margin-right: 10px;
+}
+
+#canvasWrapper #animation {
+	max-width: inherit;
+	max-height: inherit;
 }
 
 #canvasSide #imagesWrapper {
@@ -68,27 +92,39 @@ ul {
 }
 
 #canvasSide .canvasWrapper, #canvasSide #optionsTop {
-	border: 1px solid #0000ff;
+	
 	margin: 10px;
 	display: flex;
 	margin-top: 30px;
 }
 
 #canvasSide .canvasWrapper {
-	flex: 1;
+	flex: 1 1 auto;
+	background-color: #ffffff;
 }
+
+
 
 #canvasSide #optionsTop {
 	height: 30px;
 	position: absolute;
 	margin : 0;
 	width: -webkit-fill-available;
+	background-color: #eaad32;
 }
 
 #canvasSide #optionsTop .optionsTopItems {
 	padding-left: 10px;
 	padding-right: 10px;
-	border: 1px solid #0000ff;
+	background-color: #eaad32;
+	color: #f1f1f0;
+	border-right: 1px solid #f4d44c;
+	line-height: 30px;
+}
+#canvasSide #optionsTop .optionsTopItems:hover {
+	background-color: #f4d44c;
+	border-right: 1px solid #eaad32;
+	box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.2);
 }
 
 #canvasSide #showTimeline {
@@ -96,14 +132,17 @@ ul {
 	width: 70px;
 	bottom: 0;
 	margin: -30px auto 0 auto;
-	border: 1px solid #000000;
+	background-color: #f4d44c;
+	border: 1px solid #eaad32;
+	box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.2);
 }
 
 #canvasSide .row#timelineWrapper {
 	position: absolute;
 	height: 20%;
 	width: 100%;
-	border: 1px solid #00ff00;
+	border: 1px solid #f4d44c;
+	background-color: #eaad32;
 	bottom: 0;
 	display: none;
 }
@@ -113,15 +152,19 @@ ul {
 	padding: 10px;
 	height: 100%;
 	width: inherit;
-	border: 1px solid #000000;
 }
 
 #canvasSide #timelineWrapper .timelineContainer #play-stop {
-	border: 1px solid #ff0000;
+	border: 1px solid #eaad32;
+	background-color: #f4d44c;
 }
-
+#canvasSide #timelineWrapper .timelineContainer #play-stop:hover {
+	background-color: #ffffff;
+	box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.2);
+}
 #canvasSide #timelineWrapper .timelineContainer #spriteContainer {
-	border: 1px solid #0000ff;
+	border: 1px solid #eaad32;
+	background-color: #dcd1b6;
 	padding: 5px;
 	overflow: scroll;
 	position: relative;
@@ -130,25 +173,32 @@ ul {
 #canvasSide #timelineWrapper #spriteContainer #canvas2 {
 	height: 100%;
 	margin-bottom: -7px;
+	background-color: #ffffff;
 }
 
 #optionsSide {
-	border: 1px solid #00ff00;
+	color: #52514e;
 	display: flex;
 	flex-direction: column;
 	max-height: 100%;
 }
 
 #optionsSide .structure {
-	border: 1px solid #ff0000;
+	background-color: #dcd1b6;
+	border: 1px solid #f4d44c;
 	text-align: center;
 	padding: 10px 5px;
 	width: 100%;
 }
 
+#optionsSide .structure#characterStructure, #optionsSide .structure#imageStructure, 
+	#optionsSide .structure#spriteStructure {
+	background-color: #ffffff;
+}
+
 #optionsSide #treeStructure {
 	flex: 1;
-	border: 1px solid #0000ff;
+	background-color: #dcd1b6;
 	max-height: 50%;
 }
 
@@ -179,10 +229,18 @@ ul {
 #optionsSide #spriteStructureContainer .structureOption,
 #optionsSide #characterImage .structureOption,
 #optionsSide #characterImage #characterPutImage + label {
-	border: 1px solid #0000ff;
+	background-color: #eaad32;
+	color: #f1f1f0;
+	border-right: 1px solid #f4d44c;
 	font-size: 14px;
 	margin-bottom: 10px;
 	display: block;
+}
+
+#optionsSide #spriteStructureContainer .structureOption:hover,
+#optionsSide #characterImage .structureOption:hover,
+#optionsSide #characterImage #characterPutImage + label:hover {
+	background-color: #f4d44c;
 }
 #optionsSide #characterImage .structureOption:last-of-type {
 	margin-bottom: 0;

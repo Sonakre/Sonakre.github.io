@@ -36,17 +36,20 @@ function TransformImage( img ) {
 	this.p3 = createVector(img.translation[0], img.img.height, 1);
 	this.p4 = createVector(img.img.width, img.img.height, 1);
 	this.rotateP = createVector(img.img.width + 20, img.img.height/2, 1);
-	this.p1.selected = false;
+	this.p1.selected = true;
 	this.p2.selected = false;
 	this.p3.selected = false;
 	this.p4.selected = false;
 	this.rotateP.selected = false;
 	this.radius = 10;
 	this.img = img;
+	this.parent = img.parent;
 }
+
 
 SceneImage.prototype.updateImageVertices = function() {
 	this.transform.updatePoints();
+	this.transform.parent = this.parent;
 }
 
 TransformImage.prototype.updatePoints = function() {
@@ -54,7 +57,10 @@ TransformImage.prototype.updatePoints = function() {
 	this.p2[0] = this.img.translation[0] + this.img.img.width, this.p2[1] = this.img.translation[1];
 	this.p3[0] = this.img.translation[0], this.p3[1] = this.img.translation[1] + this.img.img.height;
 	this.p4[0] = this.img.translation[0] + this.img.img.width, this.p4[1] = this.img.translation[1] + this.img.img.height;
+	this.rotateP[0] = this.img.translation[0] + this.img.img.width/2, this.rotateP[1] = this.img.translation[1] - 40;
 }
+
+
 
 function createVector( x, y, z ) {
 	var vec = vec3create();
@@ -96,6 +102,8 @@ TransformImage.prototype.transformContainsPoint = function( point ) {
 	}
 }
 
+
+
 function containsPoint( node, point1, point2 ) {
 	var local = node.getPointinLocal( point2 );
 	var distsq = (local[0] - point1[0]) * (local[0] - point1[0]) + (local[1] - point1[1]) * (local[1] - point1[1]);
@@ -113,6 +121,7 @@ Node.prototype.findImageTransformContainingPoint = function( point ) {
 }
 
 Node.prototype.transformHasPoint = function( point ) {
+
 	var transform = this.findImageTransformContainingPoint( point );
 	if ( transform != null ) return transform;
 		
@@ -122,6 +131,7 @@ Node.prototype.transformHasPoint = function( point ) {
 			return transform2;
 	}
 	return null;
+
 }
 
 Node.prototype.nodeHasPoint = function( point ) {
@@ -170,6 +180,29 @@ Node.prototype.findSelectedImage = function() {
 		return this.children[i].findSelectedImage();
 	}
 	return null;
+}
+
+Node.prototype.findSelectedTransform = function() {
+	if ( this.images.length > 0 ) {
+		for ( var i = 0; i < this.images.length; i++ ) {
+			if ( this.images[i].findSelectedTransform() ) 
+				return this.images[i].findSelectedTransform();
+		}
+	}
+	for ( var i = 0; i < this.children.length; i++ ) {
+		if ( this.children[i].findSelectedTransform() != null )//node = this.children[i].findSelected();
+		return this.children[i].findSelectedTransform();
+	}
+	return null;
+}
+
+SceneImage.prototype.findSelectedTransform = function() {
+	if ( this.transform.p1.selected ) return this.transform.p1;
+	else if ( this.transform.p2.selected ) return this.transform.p2;
+	else if ( this.transform.p3.selected ) return this.transform.p3;
+	else if ( this.transform.p4.selected ) return this.transform.p4;
+	else if ( this.transform.rotateP.selected ) return this.transform.rotateP;
+	else return null;
 }
 
 Node.prototype.countNodes = function( counter ) {
@@ -261,8 +294,6 @@ Node.prototype.calculateGlobalMatrix = function() {
 Node.prototype.calculateLocalMatrix = function() {
 	var translationM = mat3create();
 	var rotationM = mat3create();
-	//translationM = [ 1, 0, 0, 0, 1, 0, this.distance * Math.cos( this.rotation ), this.distance * Math.sin( this.rotation ), 1 ];
-	//rotationM = [ Math.cos( this.rotation ), Math.sin( this.rotation ), 0, - Math.sin( this.rotation ), Math.cos( this.rotation ), 0, 0, 0, 1 ];
 	translationM = [ 1, 0, 0, 0, 1, 0, this.translation[0], this.translation[1], this.translation[2] ];
 	rotationM = [ Math.cos( this.rotation ), Math.sin( this.rotation ), 0, - Math.sin( this.rotation ), Math.cos( this.rotation ), 0, 0, 0, 1 ];
 	mat3multiply( this.localMatrix, translationM, rotationM );	
@@ -445,6 +476,91 @@ Node.prototype.rotatePoint = function( local ) {
 	this.updateMatrices();
 	
 }
+
+SceneImage.prototype.rotateImage = function( local ) {
+	//var local = image.parent.getPointinLocal( mouse );
+	var dx = local[0];
+	var dy = local[1];
+	var rad = Math.atan2( dy, dx );
+	//node.orgRot = rad;
+	var angle = rad / Math.PI * 180.0;
+	var radians = (angle - 90) * Math.PI / 180.0,
+	//var radians = angle,
+	cos = Math.cos(rad),
+	sin = Math.sin(rad);
+
+	var dist = this.parent.getDistance( this );
+
+	this.translation[0] = cos * dist;
+	this.translation[1] = sin * dist;
+
+	this.rotation = radians;
+	
+	this.updateMatrices( 0 );
+}
+
+SceneImage.prototype.getNewWidthAndHeight = function() {
+	var selectedCorner = this.findSelectedTransform();
+	var opositeCorner = null;
+	if ( selectedCorner == this.transform.p1 )
+		opositeCorner = this.transform.p4;
+	else if ( selectedCorner == this.transform.p2 )
+		opositeCorner = this.transform.p3;
+	else if ( selectedCorner == this.transform.p3 )
+		opositeCorner = this.transform.p2;
+	else if ( selectedCorner == this.transform.p4 )
+		opositeCorner = this.transform.p1;
+
+	var gp1 = this.parent.getPointinGlobal( opositeCorner );
+	var gp2 = this.parent.getPointinGlobal( selectedCorner );
+	
+	var maxX = Math.max( gp1[0], gp2[0] );
+	var minX = Math.min( gp1[0], gp2[0] );
+	var maxY = Math.max( gp1[1], gp2[1] );
+	var minY = Math.min( gp1[1], gp2[1] );
+
+	this.img.width = maxX - minX;
+	this.img.height = maxY - minY;
+	this.updateCorners( selectedCorner, opositeCorner );
+
+	//return [width, height];
+}
+
+SceneImage.prototype.updateCorners = function( selectedCorner, opositeCorner ) {
+	if ( selectedCorner == this.transform.p1 ) {
+		//opositeCorner = this.transform.p4;
+		this.transform.p1[0] = selectedCorner[0], this.transform.p1[1] = selectedCorner[1];
+		this.transform.p2[0] = opositeCorner[0], this.transform.p2[1] = selectedCorner[1];
+		this.transform.p3[0] = selectedCorner[0], this.transform.p3[1] = opositeCorner[1];
+		this.transform.p4[0] = opositeCorner[0], this.transform.p4[1] = opositeCorner[1];
+	}
+	else if ( selectedCorner == this.transform.p2 ) {
+		this.transform.p1[0] = this.translation[0], this.transform.p1[1] = selectedCorner[1];
+		this.transform.p2[0] = selectedCorner[0], this.transform.p2[1] = selectedCorner[1];
+		this.transform.p3[0] = opositeCorner[0], this.transform.p3[1] = opositeCorner[1];
+		this.transform.p4[0] = selectedCorner[0], this.transform.p4[1] = opositeCorner[1];
+		//opositeCorner = this.transform.p3;
+	}
+	else if ( selectedCorner == this.transform.p3 ) {
+		this.transform.p1[0] = selectedCorner[0], this.transform.p1[1] = this.translation[1];
+		this.transform.p2[0] = opositeCorner[0], this.transform.p2[1] = opositeCorner[1];
+		this.transform.p3[0] = selectedCorner[0], this.transform.p3[1] = selectedCorner[1];
+		this.transform.p4[0] = opositeCorner[0], this.transform.p4[1] = selectedCorner[1];
+		//opositeCorner = this.transform.p2;
+	}
+	else if ( selectedCorner == this.transform.p4 ) {
+		this.transform.p1[0] = opositeCorner[0], this.transform.p1[1] = opositeCorner[1];
+		this.transform.p2[0] = selectedCorner[0], this.transform.p2[1] = this.translation[1];
+		this.transform.p3[0] = this.translation[0], this.transform.p3[1] = selectedCorner[1];
+		this.transform.p4[0] = selectedCorner[0], this.transform.p4[1] = selectedCorner[1];
+		
+		//opositeCorner = this.transform.p1;
+	}
+	this.translation = this.transform.p1;
+
+		
+}
+
 
 SceneImage.prototype.containsPoint = function( point ) {
 	var point1 = this.transform.p1;

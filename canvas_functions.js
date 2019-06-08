@@ -7,7 +7,7 @@ function CanvasState( canvas ) {
 	this.dragPoint = null;
 	this.dragImage = null;
 	this.dragTransform = null;
-	this.imagesOn = false;
+	this.showSkeleton = true;
 	this.translate = true;
 	this.rotate = false;
 	this.selectImage = false;
@@ -39,10 +39,10 @@ function mousemove( myState, e ) {
 		if ( myState.rotate ) 
 				rotatingPoint( myState, e );
 			else draggingPoint( myState, e );
-	} else if ( myState.dragImage ) {
-		draggingImage( myState, e );
 	} else if ( myState.dragTransform ) {
 		draggingTransform( myState, e );
+	} else if ( myState.dragImage ) {
+		draggingImage( myState, e );
 	}
 }
 
@@ -81,7 +81,7 @@ function draggingPoint( myState, e ) {
 	n.translation[1] = local[1];
 	if ( n.parent != null )
 		var dist = n.parent.getDistance( n );
-	else var dist = Math.sqrt( (n.translation.x) * (n.translation.x) + (n.translation.y) * (n.translation.y) );
+	else var dist = Math.sqrt( (n.translation[0]) * (n.translation[0]) + (n.translation[1]) * (n.translation[1]) );
 	//var rad = n.parent.getRotation( n );
 	n.distance = dist;
 	//n.rotation = rad;
@@ -101,14 +101,58 @@ function draggingImage( myState, e ) {
 	n.translation[1] = local[1] - n.img.height/2;
 	if ( n.parent != null )
 		var dist = n.parent.getDistance( n );
-	else var dist = Math.sqrt( (n.translation.x) * (n.translation.x) + (n.translation.y) * (n.translation.y) );
+	else var dist = Math.sqrt( (n.translation[0]) * (n.translation[0]) + (n.translation[1]) * (n.translation[1]) );
 	//var rad = n.parent.getRotation( n );
 	n.updateMatrices( dist );
 
 }
 
 function draggingTransform( myState, e ) {
+	var mouse = myState.getMouse( e );
+	var image = myState.tree.root.findSelectedImage();
+	var n = myState.tree.root.findSelectedTransform();
+	/*
+	if ( n == image.transform.p1 ) {
 
+	}
+
+	if (clicked.onRightEdge) pane.style.width = Math.max(x, minWidth) + 'px';
+    if (clicked.onBottomEdge) pane.style.height = Math.max(y, minHeight) + 'px';
+
+    if (clicked.onLeftEdge) {
+      var currentWidth = Math.max(clicked.cx - e.clientX  + clicked.w, minWidth);
+      if (currentWidth > minWidth) {
+        pane.style.width = currentWidth + 'px';
+        pane.style.left = e.clientX + 'px';	
+      }
+    }
+
+    if (clicked.onTopEdge) {
+      var currentHeight = Math.max(clicked.cy - e.clientY  + clicked.h, minHeight);
+      if (currentHeight > minHeight) {
+        pane.style.height = currentHeight + 'px';
+        pane.style.top = e.clientY + 'px';	
+      }
+    }
+*/
+	if ( n == image.transform.rotateP ) {
+		var local = image.parent.getPointinLocal( mouse );
+		image.rotateImage( local );
+		return;
+	}
+
+
+	if ( image.parent != null )
+		var local = image.parent.getPointinLocal( mouse );
+	else var local = createVector( mouse[0], mouse[1], 1 );
+	n[0] = local[0];
+	n[1] = local[1];
+
+
+	
+	image.getNewWidthAndHeight();
+	//var dist = Math.sqrt( (n[0]) * (n[0]) + (n[1]) * (n[1]) );
+	
 }
 
 
@@ -127,7 +171,7 @@ function mouseUp( myState, e ) {
 		myState.dragPoint = null;
 	} else if ( myState.dragImage != null ) {
 		myState.dragImage = null;
-	} else if ( myState.dragTransfrom != null ) {
+	} else if ( myState.dragTransform != null ) {
 		myState.dragTransform = null;
 	} else if ( !myState.hasTrees() ){
 		var tree = new Tree();
@@ -164,15 +208,24 @@ function mouseDown( myState, e ) {
 	if ( a != null ) {
 		myState.tree.root.findSelected().selected = false;
 		a.selected = true;
+		b = null;
+		c = null;
+	}
+	else if ( c != null ) {
+		myState.tree.root.findSelectedTransform().selected = false;
+		c.selected = true;
+		a = null;
+		b = null;
 	}
 	else if ( b != null ) {
 		myState.tree.root.findSelectedImage().selected = false;
 		b.selected = true;
+		a = null;
+		c = null;
 	}
-	else if ( c != null ) {
-		myState.tree.root.findSelected().selected = false;
-		c.selected = true;
-	}
+	
+	
+	
 
 	myState.dragPoint = a;
 	myState.dragImage = b;
@@ -242,7 +295,10 @@ CanvasState.prototype.paint = function( tree ) {
 	
 	if ( myState.tree != null ) {
 		myState.paintImages( myState.tree.root );
-		myState.paintSkeleton( myState.tree.root );	
+		if ( myState.showSkeleton ) {
+			myState.paintSkeleton( myState.tree.root );	
+			myState.paintLines( myState.tree.root );
+		}
 		
 		/*if ( this.imagesOn )
 			myState.paintImages( myState.tree.root );
@@ -255,6 +311,7 @@ CanvasState.prototype.paint = function( tree ) {
 
 CanvasState.prototype.paintSkeleton = function( node ) {
 	this.paintNode( node );
+	
 
 	if ( node.children.length == 0 ) return;
 
@@ -264,6 +321,35 @@ CanvasState.prototype.paintSkeleton = function( node ) {
 	}
 	
 }
+CanvasState.prototype.paintLines = function( node ) {
+	this.paintLine( node );
+	
+	if ( node.children.length == 0 ) return;
+
+	for ( var i = 0; i < node.children.length; i++ ) {
+		//this.paintNode( node.children[i] );
+		this.paintLines( node.children[i] );
+	}
+}
+CanvasState.prototype.paintLine = function( node ) {
+
+	var m = node.globalMatrix;
+	this.ctx.strokeStyle = "#000000";
+
+	for ( var i = 0; i < node.children.length; i++ ) {
+		this.ctx.setTransform( m[0], m[1], m[3], m[4], m[6], m[7] );
+
+		this.ctx.beginPath();
+		this.ctx.moveTo( 0, 0 );
+		this.ctx.lineTo( node.children[i].translation[0], node.children[i].translation[1] );
+		this.ctx.closePath();
+		this.ctx.stroke();
+		this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+	}
+
+}
+
+
 CanvasState.prototype.paintNode = function( node ) {
 	var m = node.globalMatrix;
 	this.ctx.setTransform( m[0], m[1], m[3], m[4], m[6], m[7] );
@@ -310,8 +396,24 @@ CanvasState.prototype.paintImage = function( node, image ) {
   	this.ctx.beginPath();
   	this.ctx.rect( image.translation[0], image.translation[1], image.img.width, image.img.height );
   	this.ctx.stroke();
+  	
+  	
+  	drawDragAnchor(image.transform.p1, image.transform.radius, this.ctx);
+    drawDragAnchor(image.transform.p2, image.transform.radius, this.ctx);
+    drawDragAnchor(image.transform.p3, image.transform.radius, this.ctx);
+    drawDragAnchor(image.transform.p4, image.transform.radius, this.ctx);
+    drawDragAnchor(image.transform.rotateP, image.transform.radius, this.ctx);
+  	
+
   	this.ctx.setTransform(1, 0, 0, 1, 0, 0);
 }
+
+function drawDragAnchor( point, radius, ctx ) {
+        ctx.beginPath();
+        ctx.arc( point[0], point[1], radius, 0, 2 * Math.PI );
+        ctx.closePath();
+        ctx.fill();
+    }
 
 
 CanvasState.prototype.isRotating = function() {
@@ -544,19 +646,20 @@ function addImageToNode( image ) {
 	canvasState.ctx.drawImage(selectedNode.images[0].img,selectedNode.images[0].translation[0],selectedNode.images[0].translation[1], selectedNode.images[0].img.width, selectedNode.images[0].img.height );
 */
 }
-
+var id;
 function animateSprite( canvasAnimate, spritesheet, ctx ) {
 	//canvasState.ctx.requestAnimationFrame( animateSprite );
 	
 	
 	updateAnimationSprite( canvasAnimate, spritesheet );
 	renderSprite( canvasAnimate, spritesheet, ctx );
-	requestAnimationFrame( function() { animateSprite( canvasAnimate, spritesheet, ctx ) } );
-	/*if ( !start_stop ) {
+	id = requestAnimationFrame( function() { animateSprite( canvasAnimate, spritesheet, ctx ) } );
+	if ( !start_stop ) {
 		cancelAnimationFrame( id );
 		//id = undefined;
 	}
-	*/
+	
+	//cancelAnimationFrame(id);
 }
 
 function renderSprite( canvasAnimate, spritesheet, ctx ) {	
@@ -590,6 +693,7 @@ function updateAnimationSprite( canvasAnimate, spritesheet ) {
 }
 
 var canvasState;
+var start_stop = false;
 
 //init
 function init() {
@@ -683,31 +787,40 @@ function init() {
 
     var play_stop = document.getElementById('play-stop');
     var canvasAnimate = document.getElementById("animation");
+    var previewCanvas = document.getElementById("previewCanvas");
+    var backPreview = document.getElementById("backPreview");
 	var ctx = canvasAnimate.getContext("2d");
     canvasAnimate.height = canvas.height;
     canvasAnimate.width = canvas.width;
     var visited = false;
 
+
     play_stop.addEventListener("click", function() {
-    	if ( canvas.style.display == "none" ) {
+    	if ( canvas.style.display == "none" && start_stop ) {
     		start_stop = false;
-    		canvas.style.display = "block";
-    		canvasAnimate.style.display = "none";
+    		/*canvas.style.display = "block";
+    		previewCanvas.style.display = "none";*/
     	} else {
     		start_stop = true;
-    		canvasAnimate.style.display = "block";
+    		previewCanvas.style.display = "block";
     		canvas.style.display = "none";
-    		if ( !visited ) {
+    		//if ( !visited ) {
     			animateSprite( canvasAnimate, spriteSheetDownload, ctx );
-    			visited = true;
-    		}
+    		//	visited = true;
+    		//}
     	}
     	
     });
 
+    backPreview.addEventListener("click", function() {
+    	start_stop = false;
+    	canvas.style.display = "block";
+    	previewCanvas.style.display = "none";
+    });
+
     var rotate = document.getElementById("rotate");
 	var translate = document.getElementById("translate");
-
+	var show_hide = document.getElementById("show-hide");
 	
 	rotate.addEventListener("click", function() {
 		//console.log( canvasState );
@@ -725,6 +838,11 @@ function init() {
 		//console.log( canvasState.tree );
 	});
 
+	show_hide.addEventListener("click", function() {
+		if ( canvasState.showSkeleton ) canvasState.showSkeleton = false;
+		else canvasState.showSkeleton = true;
+	})
+
 	var collectionImages = document.getElementById("collectionImages");
 	var imagesWrapper = document.getElementById("imagesWrapper");
 	
@@ -733,6 +851,8 @@ function init() {
 			imagesWrapper.style.display = "block";
 		else imagesWrapper.style.display = "none";
 	});
+
+
 /*
 	images.addEventListener("click", function() {
 		//console.log( canvasState );
