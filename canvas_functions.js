@@ -109,8 +109,10 @@ function draggingImage( myState, e ) {
 
 function draggingTransform( myState, e ) {
 	var mouse = myState.getMouse( e );
-	var image = myState.tree.root.findSelectedImage();
-	var n = myState.tree.root.findSelectedTransform();
+	//var image = myState.tree.root.findSelectedImage();
+	var transform = myState.tree.root.findSelectedTransform();
+	var n = transform[0];
+	var image = transform[1];
 	/*
 	if ( n == image.transform.p1 ) {
 
@@ -212,7 +214,7 @@ function mouseDown( myState, e ) {
 		c = null;
 	}
 	else if ( c != null ) {
-		myState.tree.root.findSelectedTransform().selected = false;
+		myState.tree.root.findSelectedTransform()[0].selected = false;
 		c.selected = true;
 		a = null;
 		b = null;
@@ -392,7 +394,9 @@ CanvasState.prototype.paintImage = function( node, image ) {
   	//this.ctx.rotate( node.rotation );
   	//this.ctx.drawImage( node.image, node.image.style.x, node.image.style.y, node.image.width, node.image.height );
   	this.ctx.drawImage( image.img, image.translation[0], image.translation[1], image.img.width, image.img.height );
-  	this.ctx.strokeStyle = "#ff0000";
+  	
+  	if ( this.showSkeleton ) {
+  	this.ctx.strokeStyle = "#0000ff";
   	this.ctx.beginPath();
   	this.ctx.rect( image.translation[0], image.translation[1], image.img.width, image.img.height );
   	this.ctx.stroke();
@@ -402,17 +406,21 @@ CanvasState.prototype.paintImage = function( node, image ) {
     drawDragAnchor(image.transform.p2, image.transform.radius, this.ctx);
     drawDragAnchor(image.transform.p3, image.transform.radius, this.ctx);
     drawDragAnchor(image.transform.p4, image.transform.radius, this.ctx);
-    drawDragAnchor(image.transform.rotateP, image.transform.radius, this.ctx);
-  	
+    //drawDragAnchor(image.transform.rotateP, image.transform.radius, this.ctx);
+  	}
 
   	this.ctx.setTransform(1, 0, 0, 1, 0, 0);
 }
 
 function drawDragAnchor( point, radius, ctx ) {
+		ctx.strokeStyle = "#0000ff";
+		ctx.fillStyle = "#72bcd4";
         ctx.beginPath();
-        ctx.arc( point[0], point[1], radius, 0, 2 * Math.PI );
+        ctx.rect( point[0] - radius/2, point[1] - radius/2, radius, radius );
         ctx.closePath();
         ctx.fill();
+        ctx.stroke();
+
     }
 
 

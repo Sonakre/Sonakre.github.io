@@ -58,8 +58,10 @@ TransformImage.prototype.updatePoints = function() {
 	this.p3[0] = this.img.translation[0], this.p3[1] = this.img.translation[1] + this.img.img.height;
 	this.p4[0] = this.img.translation[0] + this.img.img.width, this.p4[1] = this.img.translation[1] + this.img.img.height;
 	this.rotateP[0] = this.img.translation[0] + this.img.img.width/2, this.rotateP[1] = this.img.translation[1] - 40;
-}
 
+
+
+}
 
 
 function createVector( x, y, z ) {
@@ -197,11 +199,11 @@ Node.prototype.findSelectedTransform = function() {
 }
 
 SceneImage.prototype.findSelectedTransform = function() {
-	if ( this.transform.p1.selected ) return this.transform.p1;
-	else if ( this.transform.p2.selected ) return this.transform.p2;
-	else if ( this.transform.p3.selected ) return this.transform.p3;
-	else if ( this.transform.p4.selected ) return this.transform.p4;
-	else if ( this.transform.rotateP.selected ) return this.transform.rotateP;
+	if ( this.transform.p1.selected ) return [this.transform.p1, this];
+	else if ( this.transform.p2.selected ) return [this.transform.p2, this];
+	else if ( this.transform.p3.selected ) return [this.transform.p3, this];
+	else if ( this.transform.p4.selected ) return [this.transform.p4, this];
+	else if ( this.transform.rotateP.selected ) return [this.transform.rotateP, this];
 	else return null;
 }
 
@@ -435,64 +437,40 @@ Node.prototype.updateGlobal = function() {
 }
 
 Node.prototype.rotatePoint = function( local ) {
-//function rotatePoint( myState, node1, angle ) {
-	//var a = angle + 90;
-	//var radians = a * Math.PI / 180.0,
+
 	var dx = local[0];
 	var dy = local[1];
 	var rad = Math.atan2( dy, dx );
-	//node.orgRot = rad;
+
 	var angle = rad / Math.PI * 180.0;
 	var radians = (angle - 90) * Math.PI / 180.0,
-	//var radians = angle,
+
 	cos = Math.cos(rad),
 	sin = Math.sin(rad);
-	/*
-	dX = this.translation[0] ,
-	dY = this.translation[1] ;
-	*/
-	//var dist = Math.sqrt( (dX) * (dX) + (dY) * (dY) );
-	//point.translation.x = cos * dX - sin * dY ;
-	//point.translation.y = sin * dX + cos * dY ;
+
 	this.translation[0] = cos * this.distance;
 	this.translation[1] = sin * this.distance;
-	//var soloPoint = {x: point.translation.x, y:point.translation.y};
-
-	//var rad = origin.getRotation( soloPoint );
 	
 	this.rotation = radians;
 
-	
-
-/*
-	var radians = angle * Math.PI / 180.0;
-	var rotateMatrix = create();
-	var translationM = create();
-	fromRotation( rotateMatrix, radians );
-	point.rotation = radians;
-	translationM = [ 1, 0, 0, 0, 1, 0, point.distance * Math.cos( point.rotation ), point.distance * Math.sin( point.rotation ), 1 ];
-	multiply( point.localMatrix, translationM, rotateMatrix );
-*/
-	this.updateMatrices();
-	
+	this.updateMatrices();	
 }
 
 SceneImage.prototype.rotateImage = function( local ) {
-	//var local = image.parent.getPointinLocal( mouse );
 	var dx = local[0];
 	var dy = local[1];
 	var rad = Math.atan2( dy, dx );
-	//node.orgRot = rad;
+
 	var angle = rad / Math.PI * 180.0;
 	var radians = (angle - 90) * Math.PI / 180.0,
-	//var radians = angle,
+
 	cos = Math.cos(rad),
 	sin = Math.sin(rad);
 
-	var dist = this.parent.getDistance( this );
+	//var dist = this.parent.getDistance( this );
 
-	this.translation[0] = cos * dist;
-	this.translation[1] = sin * dist;
+	//this.translation[0] = cos * dist;
+	//this.translation[1] = sin * dist;
 
 	this.rotation = radians;
 	
@@ -500,7 +478,7 @@ SceneImage.prototype.rotateImage = function( local ) {
 }
 
 SceneImage.prototype.getNewWidthAndHeight = function() {
-	var selectedCorner = this.findSelectedTransform();
+	var selectedCorner = this.findSelectedTransform()[0];
 	var opositeCorner = null;
 	if ( selectedCorner == this.transform.p1 )
 		opositeCorner = this.transform.p4;
@@ -519,16 +497,16 @@ SceneImage.prototype.getNewWidthAndHeight = function() {
 	var maxY = Math.max( gp1[1], gp2[1] );
 	var minY = Math.min( gp1[1], gp2[1] );
 
-	this.img.width = maxX - minX;
-	this.img.height = maxY - minY;
 	this.updateCorners( selectedCorner, opositeCorner );
-
-	//return [width, height];
+	
+	this.img.width = Math.sqrt((this.transform.p2[0] - this.transform.p1[0]) * (this.transform.p2[0] - this.transform.p1[0]) + (this.transform.p2[1] - this.transform.p1[1]) * (this.transform.p2[1] - this.transform.p1[1]));
+	this.img.height = Math.sqrt((this.transform.p3[0] - this.transform.p1[0]) * (this.transform.p3[0] - this.transform.p1[0]) + (this.transform.p3[1] - this.transform.p1[1]) * (this.transform.p3[1] - this.transform.p1[1]))	
+	this.transform.rotateP[0] = this.translation[0] + this.img.width/2, this.transform.rotateP[1] = this.translation[1] - 40;
+	
 }
 
 SceneImage.prototype.updateCorners = function( selectedCorner, opositeCorner ) {
 	if ( selectedCorner == this.transform.p1 ) {
-		//opositeCorner = this.transform.p4;
 		this.transform.p1[0] = selectedCorner[0], this.transform.p1[1] = selectedCorner[1];
 		this.transform.p2[0] = opositeCorner[0], this.transform.p2[1] = selectedCorner[1];
 		this.transform.p3[0] = selectedCorner[0], this.transform.p3[1] = opositeCorner[1];
@@ -539,26 +517,20 @@ SceneImage.prototype.updateCorners = function( selectedCorner, opositeCorner ) {
 		this.transform.p2[0] = selectedCorner[0], this.transform.p2[1] = selectedCorner[1];
 		this.transform.p3[0] = opositeCorner[0], this.transform.p3[1] = opositeCorner[1];
 		this.transform.p4[0] = selectedCorner[0], this.transform.p4[1] = opositeCorner[1];
-		//opositeCorner = this.transform.p3;
 	}
 	else if ( selectedCorner == this.transform.p3 ) {
 		this.transform.p1[0] = selectedCorner[0], this.transform.p1[1] = this.translation[1];
 		this.transform.p2[0] = opositeCorner[0], this.transform.p2[1] = opositeCorner[1];
 		this.transform.p3[0] = selectedCorner[0], this.transform.p3[1] = selectedCorner[1];
 		this.transform.p4[0] = opositeCorner[0], this.transform.p4[1] = selectedCorner[1];
-		//opositeCorner = this.transform.p2;
 	}
 	else if ( selectedCorner == this.transform.p4 ) {
 		this.transform.p1[0] = opositeCorner[0], this.transform.p1[1] = opositeCorner[1];
 		this.transform.p2[0] = selectedCorner[0], this.transform.p2[1] = this.translation[1];
 		this.transform.p3[0] = this.translation[0], this.transform.p3[1] = selectedCorner[1];
 		this.transform.p4[0] = selectedCorner[0], this.transform.p4[1] = selectedCorner[1];
-		
-		//opositeCorner = this.transform.p1;
 	}
 	this.translation = this.transform.p1;
-
-		
 }
 
 
