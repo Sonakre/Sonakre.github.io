@@ -1,7 +1,6 @@
 function CanvasState( canvas ) {
 	this.canvas = canvas;
 	this.ctx = canvas.getContext("2d");
-	//this.trees = [];
 	this.tree = null;
 	this.mouse = createVector( 0, 0, 1 );
 	this.dragPoint = null;
@@ -490,7 +489,7 @@ SpriteSheet.prototype.recalculateWidth = function( spriteToCanvas ) {
 	fakeCanvas.height = this.height;
 	fakeCanvas.width = this.width;
 	fakeCanvas.getContext("2d").drawImage(this.canvas, 0, 0);
-	this.width = this.width + spriteToCanvas.width * this.scaleConstant;
+	this.width = this.width + this.frameWidth * this.scaleConstant;
 	this.canvas.width = this.width;
 	this.ctx.drawImage(fakeCanvas,0,0);
 }
@@ -515,6 +514,7 @@ SpriteSheet.prototype.calculateWidth = function( spriteToCanvas ) {
 	else this.width = spriteToCanvas.width * this.scaleConstant * 4; //el 4 és una constant que pot variar, de moment es queda així hardcoded
 
 	this.canvas.width = this.width;
+	this.frameWidth = spriteToCanvas.width;
 }
 
 SpriteSheet.prototype.saveImageInSpriteSheet = function( spriteToCanvas ) {
@@ -860,7 +860,24 @@ function init() {
 		else imagesWrapper.style.display = "none";
 	});
 
+	var load_character = document.getElementById("load-character");
+	var load_animation = document.getElementById("load-animation");
 
+	load_character.addEventListener("click", function() {
+		canvasState.loadCharacter();
+	});
+	load_animation.addEventListener("click", function() {
+		if ( timeline.style.display == "" ) timeline.style.display = "flex";
+		var spriteToCanvas = new Image();
+		spriteToCanvas.src = "mob/mob_animation.png";
+		spriteToCanvas.height = 747;
+		spriteToCanvas.width = 10688;
+		spriteToCanvas.onload = function() {
+			var sprite1 = canvasState.loadAnimation(this);
+			spriteSheetShow = sprite1[0];
+			spriteSheetDownload = sprite1[1];
+		}
+	});
 /*
 	images.addEventListener("click", function() {
 		//console.log( canvasState );

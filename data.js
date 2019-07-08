@@ -6,7 +6,6 @@ function Tree() {
 function Node( px, py ) {
 	this.translation = createVector( px, py, 1 );
 	this.rotation = 0;
-	this.scale = 0;
 	this.localMatrix = mat3create();
 	this.globalMatrix = mat3create();
 	this.children = [];
