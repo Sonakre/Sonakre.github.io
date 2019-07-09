@@ -121,10 +121,20 @@ ul {
 	border-right: 1px solid #f4d44c;
 	line-height: 30px;
 }
-#canvasSide #optionsTop .optionsTopItems:hover {
+#canvasSide #optionsTop .optionsTopItems:hover,
+#canvasSide #optionsTop .optionsTopItems.selected {
 	background-color: #f4d44c;
 	border-right: 1px solid #eaad32;
 	box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.2);
+}
+
+.icon_play_stop {
+	margin: auto;
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
 }
 
 #canvasSide #showTimeline {

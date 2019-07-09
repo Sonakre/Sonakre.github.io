@@ -703,6 +703,27 @@ function updateAnimationSprite( canvasAnimate, spritesheet ) {
 var canvasState;
 var start_stop = false;
 
+function hasClass(elem, className) {
+    return new RegExp(' ' + className + ' ').test(' ' + elem.className + ' ');
+}
+
+function addClass(elem, className) {
+    if (!hasClass(elem, className)) {
+        elem.className += ' ' + className;
+    }
+}
+
+function removeClass(elem, className) {
+    var newClass = ' ' + elem.className.replace( /[\t\r\n]/g, ' ') + ' ';
+    if (hasClass(elem, className)) {
+        while (newClass.indexOf(' ' + className + ' ') >= 0 ) {
+            newClass = newClass.replace(' ' + className + ' ', ' ');
+        }
+        elem.className = newClass.replace(/^\s+|\s+$/g, '');
+    }
+} 
+
+
 //init
 function init() {
 	var wrapper = document.getElementById("canvasWrapper");
@@ -806,10 +827,12 @@ function init() {
     play_stop.addEventListener("click", function() {
     	if ( canvas.style.display == "none" && start_stop ) {
     		start_stop = false;
+    		document.getElementById("icon_play_stop").src="images/icons8-play-50.png";
     		/*canvas.style.display = "block";
     		previewCanvas.style.display = "none";*/
     	} else {
     		start_stop = true;
+    		document.getElementById("icon_play_stop").src="images/icons8-pause-48.png";
     		previewCanvas.style.display = "block";
     		canvas.style.display = "none";
     		//if ( !visited ) {
@@ -832,17 +855,33 @@ function init() {
 	
 	rotate.addEventListener("click", function() {
 		//console.log( canvasState );
-		if ( canvasState.isRotating() )
+		if ( canvasState.isRotating() ) {
 			canvasState.desactivateRotation();
-		else canvasState.activateRotation();
+			removeClass(rotate, 'selected');
+			addClass(translate, 'selected');
+		}
+		else { 
+			canvasState.activateRotation();
+			addClass(rotate, 'selected');
+			removeClass(translate, 'selected');
+			//rotate.className += ' selected';
+		}
 		//console.log( canvasState.tree );
 	});
 
 	translate.addEventListener("click", function() {
 		//console.log( canvasState );
-		if ( canvasState.isTranslating() )
+		if ( canvasState.isTranslating() ) {
 			canvasState.desactivateTranslation();
-		else canvasState.activateTranslation();
+			removeClass(translate, 'selected');
+			addClass(rotate, 'selected');
+		}
+		else { 
+			canvasState.activateTranslation();
+			addClass(translate, 'selected');
+			removeClass(rotate, 'selected');
+			//translate.className += ' selected';
+		}
 		//console.log( canvasState.tree );
 	});
 
