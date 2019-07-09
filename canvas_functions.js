@@ -870,6 +870,7 @@ function init() {
 		if ( timeline.style.display == "" ) timeline.style.display = "flex";
 		var spriteToCanvas = new Image();
 		spriteToCanvas.src = "mob/mob_animation.png";
+		spriteToCanvas.crossOrigin = "Anonymous";
 		spriteToCanvas.height = 747;
 		spriteToCanvas.width = 10688;
 		spriteToCanvas.onload = function() {
